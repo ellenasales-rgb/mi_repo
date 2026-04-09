@@ -1,0 +1,1630 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Point MLB · Análise de Detratores Jan–Mar 2026</title>
+<style>
+  :root {
+    --mp-yellow: #FFE600; --mp-blue: #009EE3; --mp-dark: #1A1A2E;
+    --bg: #F4F6F9; --card: #FFFFFF; --card-bg: #FFFFFF;
+    --text: #1C1C1E; --muted: #6B7280; --border: #E5E7EB;
+    --t1: #EF4444; --t2: #F97316; --t3: #EAB308;
+    --t4: #3B82F6; --t5: #8B5CF6; --t6: #10B981; --t7: #9CA3AF;
+    --red: #EF4444; --orange: #F97316; --yellow: #EAB308;
+    --green: #10B981; --blue: #3B82F6; --purple: #8B5CF6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; }
+
+  /* HEADER */
+  .header { background: var(--mp-dark); color: white; padding: 28px 40px 24px; border-bottom: 4px solid var(--mp-yellow); }
+  .header-top { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+  .badge { background: var(--mp-yellow); color: var(--mp-dark); font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; letter-spacing: 0.5px; }
+  .badge.blue { background: var(--mp-blue); color: white; }
+  .badge.gray { background: #6B7280; color: white; }
+  .badge.red { background: var(--red); color: white; }
+  .header h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; }
+  .header-meta { color: #A0AEC0; font-size: 13px; margin-top: 4px; }
+  .header-meta span { margin-right: 20px; }
+
+  /* TABS */
+  .tab-nav { background: var(--mp-dark); border-bottom: 1px solid rgba(255,255,255,.12); padding: 0 40px; display: flex; gap: 4px; }
+  .tab-btn { padding: 12px 22px; font-size: 13px; font-weight: 600; color: #A0AEC0; border: none; background: none; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -1px; transition: color .2s, border-color .2s; white-space: nowrap; }
+  .tab-btn:hover { color: white; }
+  .tab-btn.active { color: var(--mp-yellow); border-bottom-color: var(--mp-yellow); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* LAYOUT */
+  .main { padding: 28px 40px; max-width: 1200px; margin: 0 auto; }
+
+  /* SUMMARY CARDS */
+  .summary-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 28px; }
+  .stat-card { background: var(--card); border-radius: 10px; padding: 16px 18px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  .stat-card .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .stat-card .value { font-size: 26px; font-weight: 700; color: var(--mp-dark); }
+  .stat-card .sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  /* CHART CARD */
+  .chart-card { background: var(--card); border-radius: 10px; padding: 22px 24px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,.06); margin-bottom: 28px; }
+  .chart-card h2 { font-size: 14px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 18px; }
+  .bar-row { display: flex; align-items: center; margin-bottom: 11px; gap: 10px; }
+  .bar-label { width: 200px; font-size: 13px; font-weight: 500; text-align: right; flex-shrink: 0; }
+  .bar-track { flex: 1; background: #F3F4F6; border-radius: 4px; height: 22px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; display: flex; align-items: center; padding-left: 8px; transition: width 0.6s ease; }
+  .bar-fill span { font-size: 12px; font-weight: 600; color: white; white-space: nowrap; }
+  .bar-count { width: 80px; font-size: 13px; color: var(--muted); flex-shrink: 0; }
+  .section-title { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px; }
+
+  /* TABLES */
+  table.ex-table { width: 100%; border-collapse: collapse; }
+  .ex-table thead tr { border-bottom: 2px solid var(--border); }
+  .ex-table th { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; padding: 6px 8px; text-align: left; }
+  .ex-table td { padding: 7px 8px; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .ex-table tr:last-child td { border-bottom: none; }
+  .ex-table tr:hover td { background: #FAFAFA; }
+  .conv-id { font-family: monospace; font-size: 11px; color: var(--muted); background: #F3F4F6; padding: 2px 6px; border-radius: 4px; white-space: nowrap; }
+
+  /* CARD */
+  .card { background: var(--card); border-radius: 10px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,.06); margin-bottom: 20px; overflow: hidden; }
+  .card-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); padding: 16px 20px 0; }
+  .card-body { padding: 12px 20px 20px; }
+
+  /* CLUSTERS */
+  .cluster { border: 1px solid var(--border); border-radius: 8px; margin-bottom: 14px; overflow: hidden; }
+  .cluster-header { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: #FAFAFA; cursor: pointer; user-select: none; }
+  .cluster-header:hover { background: #F3F4F6; }
+  .cluster-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .cluster-info { flex: 1; }
+  .cluster-info .name { font-size: 14px; font-weight: 600; }
+  .cluster-info .desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .cluster-right { display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
+  .cluster-pct { font-size: 20px; font-weight: 700; }
+  .cluster-count { font-size: 12px; color: var(--muted); text-align: right; }
+  .cluster-bar-wrap { width: 80px; height: 5px; background: #E5E7EB; border-radius: 3px; overflow: hidden; }
+  .cluster-bar-fill { height: 100%; border-radius: 3px; }
+  .chevron { color: var(--muted); font-size: 16px; transition: transform .2s; flex-shrink: 0; }
+  .cluster-body { display: none; padding: 14px 16px 16px; border-top: 1px solid var(--border); }
+  .cluster-body.open { display: block; }
+
+  /* SECTION HEADER */
+  .section-header { display: flex; align-items: center; gap: 12px; margin: 32px 0 16px; }
+  .section-header h2 { font-size: 18px; font-weight: 700; }
+  .l2-badge { font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 20px; }
+
+  /* INSIGHTS */
+  .sub-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 8px; }
+  .insight { border-left: 3px solid; padding: 10px 14px; border-radius: 0 6px 6px 0; margin-bottom: 8px; font-size: 13px; }
+  .insight.red { border-color: var(--red); background: #FEF2F2; }
+  .insight.orange { border-color: var(--orange); background: #FFF7ED; }
+  .insight.yellow { border-color: var(--yellow); background: #FEFCE8; }
+  .insight.blue { border-color: var(--blue); background: #EFF6FF; }
+  .insight.green { border-color: var(--green); background: #F0FDF4; }
+  .insight strong { display: block; margin-bottom: 3px; }
+
+  /* QUOTES */
+  .quote-block { background: #F9FAFB; border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; margin: 6px 0; font-size: 12px; font-style: italic; color: #374151; }
+  .quote-block .meta { font-style: normal; font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+
+  /* CASE COUNT & IDs */
+  .case-count { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 10px; background: rgba(0,0,0,.07); margin-left: 6px; vertical-align: middle; }
+  .conv-ids { margin-top: 6px; font-size: 11px; color: var(--muted); }
+  .conv-ids span { font-family: monospace; font-size: 10px; background: #F3F4F6; padding: 1px 5px; border-radius: 4px; margin-right: 4px; display: inline-block; margin-bottom: 3px; }
+
+  /* TWO-COL */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  /* ACTION TABLE */
+  table.action-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .action-table th { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; padding: 8px 10px; text-align: left; border-bottom: 2px solid var(--border); }
+  .action-table td { padding: 9px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .action-table tr:last-child td { border-bottom: none; }
+  .action-table tr:hover td { background: #FAFAFA; }
+  .pill { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px; white-space: nowrap; }
+  .pill.qw { background: #D1FAE5; color: #065F46; }
+  .pill.mp { background: #DBEAFE; color: #1E40AF; }
+  .pill.est { background: #F3E8FF; color: #6B21A8; }
+  .pill.op { background: #FEF3C7; color: #92400E; }
+  .pill.prod { background: #E0F2FE; color: #0C4A6E; }
+  .pill.pol { background: #FCE7F3; color: #9D174D; }
+
+  .divider { border: none; border-top: 2px solid var(--border); margin: 32px 0; }
+  .footer { padding: 20px 40px; text-align: center; font-size: 12px; color: var(--muted); border-top: 1px solid var(--border); margin-top: 10px; }
+
+  @media (max-width: 768px) {
+    .main { padding: 16px; }
+    .header { padding: 18px 16px; }
+    .tab-nav { padding: 0 16px; overflow-x: auto; }
+    .summary-row { grid-template-columns: repeat(2,1fr); }
+    .two-col { grid-template-columns: 1fr; }
+    .bar-label { width: 130px; font-size: 12px; }
+  }
+
+  /* TAB-3 ANALÍTICA STYLE */
+  .exec-box { background: linear-gradient(135deg, #1A1A2E 0%, #009EE3 100%); color: white; border-radius: 14px; padding: 26px 30px; margin-bottom: 28px; }
+  .exec-box h2 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 18px; opacity: 0.7; }
+  .exec-points { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .exec-points li { display: flex; gap: 12px; align-items: flex-start; font-size: 13px; line-height: 1.5; }
+  .exec-points li strong { color: #FFE600; }
+  .chart-wrap { background: var(--card); border-radius: 10px; padding: 22px 24px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,.06); margin-bottom: 28px; }
+  .chart-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .chart-subtitle { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+  .chart-inner { position: relative; }
+  .metric-note-cd { background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 8px; padding: 12px 16px; font-size: 12px; margin-bottom: 24px; }
+  .metric-note-cd strong { color: #1E40AF; }
+  .section-title-cd { font-size: 17px; font-weight: 700; color: var(--text); margin: 28px 0 6px; display: flex; align-items: center; gap: 10px; }
+  .section-title-cd::before { content: ''; display: block; width: 4px; height: 20px; background: var(--mp-blue); border-radius: 2px; }
+  .section-desc-cd { font-size: 13px; color: var(--muted); margin-bottom: 14px; }
+  .case-grid-cd { display: grid; grid-template-columns: repeat(2,1fr); gap: 16px; margin-bottom: 28px; }
+  .case-card-cd { background: var(--card); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  .case-hdr { padding: 13px 16px; border-bottom: 1px solid var(--border); }
+  .case-hdr.red-hdr { background: #FEF2F2; border-bottom-color: #FECACA; }
+  .case-hdr.orange-hdr { background: #FFF7ED; border-bottom-color: #FED7AA; }
+  .case-hdr-title { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
+  .case-hdr-id { font-family: monospace; font-size: 11px; color: var(--muted); }
+  .case-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+  .tag-c1 { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; background: #FEE2E2; color: #991B1B; }
+  .tag-mxw { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; background: #DBEAFE; color: #1E40AF; }
+  .tag-hw { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; background: #FEE2E2; color: #7F1D1D; }
+  .tag-ship { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; background: #FFF7ED; color: #7C2D12; }
+  .case-bdy { padding: 14px 16px; }
+  .msg-u { background: #EFF6FF; border-radius: 8px 8px 3px 8px; padding: 8px 12px; font-size: 12px; font-style: italic; color: #1E3A5F; margin-bottom: 6px; }
+  .msg-b { background: #F9FAFB; border: 1px solid var(--border); border-radius: 8px 8px 8px 3px; padding: 8px 12px; font-size: 12px; margin-bottom: 6px; }
+  .msg-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; margin-top: 8px; }
+  .msg-lbl:first-child { margin-top: 0; }
+  .insight-cd { background: #FFF7ED; border-left: 3px solid var(--orange); border-radius: 0 6px 6px 0; padding: 9px 12px; font-size: 12px; margin-top: 10px; }
+  .insight-cd strong { color: #C05621; display: block; margin-bottom: 2px; }
+  .csat-ok-cd { background: #D1FAE5; color: #065F46; font-weight: 700; font-size: 12px; padding: 2px 8px; border-radius: 20px; display: inline-block; }
+  .csat-warn-cd { background: #FEF3C7; color: #92400E; font-weight: 700; font-size: 12px; padding: 2px 8px; border-radius: 20px; display: inline-block; }
+  .csat-bad-cd { background: #FEE2E2; color: #991B1B; font-weight: 700; font-size: 12px; padding: 2px 8px; border-radius: 20px; display: inline-block; }
+  .gap-badge { font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 8px; }
+  .gap-h { background: #FEE2E2; color: #991B1B; }
+  .gap-m { background: #FEF3C7; color: #92400E; }
+  .gap-l { background: #D1FAE5; color: #065F46; }
+  .opp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 28px; }
+  .opp-card { background: var(--card); border-radius: 10px; border: 1px solid var(--border); padding: 18px 20px; }
+  .opp-card.opp-danger { border-left: 4px solid var(--red); }
+  .opp-card.opp-warning { border-left: 4px solid var(--orange); }
+  .opp-card-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px; padding: 3px 10px; border-radius: 12px; display: inline-block; }
+  .opp-item { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; margin-bottom: 12px; }
+  .opp-num { font-weight: 800; font-size: 16px; line-height: 1.2; flex-shrink: 0; }
+  .action-table-v2 { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .action-table-v2 th { background: #1A1A2E; color: white; padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; }
+  .action-table-v2 td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .action-table-v2 tr:hover td { background: #FAFAFA; }
+  .action-table-v2 tr:last-child td { border-bottom: none; }
+  .impact-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+  .dot-h { background: #DC2626; }
+  .dot-m { background: #F59E0B; }
+  .dot-l { background: #10B981; }
+
+  /* Exec-box talking points */
+  .tp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .tp-item { display: flex; gap: 12px; align-items: flex-start; background: rgba(255,255,255,0.08); border-radius: 8px; padding: 12px 14px; }
+  .tp-item.full { grid-column: 1 / -1; }
+  .tp-num { background: #FFE600; color: #1A1A2E; font-weight: 800; font-size: 13px; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .tp-body { flex: 1; }
+  .tp-hl { font-size: 13px; font-weight: 700; color: #FFE600; margin-bottom: 3px; line-height: 1.3; }
+  .tp-detail { font-size: 12px; color: rgba(255,255,255,0.82); line-height: 1.4; }
+  @media (max-width: 768px) { .tp-grid { grid-template-columns: 1fr; } .tp-item.full { grid-column: auto; } }
+  @media (max-width: 768px) { .case-grid-cd { grid-template-columns: 1fr; } .opp-grid { grid-template-columns: 1fr; } }
+
+  /* CX vs MXW tab */
+  .comp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 28px; }
+  .comp-col { background: var(--card); border-radius: 10px; border: 1px solid var(--border); padding: 18px 20px; }
+  .comp-col-hdr { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; padding: 4px 12px; border-radius: 10px; display: inline-block; margin-bottom: 14px; }
+  .mxw-hdr { background: #DBEAFE; color: #1E40AF; }
+  .cs-hdr { background: #D1FAE5; color: #065F46; }
+  .cluster-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; font-size: 13px; }
+  .cluster-pct-badge { font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 8px; flex-shrink: 0; }
+  .diff-box { background: var(--card); border-radius: 10px; border: 1px solid var(--border); padding: 20px; margin-bottom: 28px; }
+  .diff-box h3 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; color: var(--muted); margin-bottom: 16px; }
+  .diff-row { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 12px; font-size: 13px; }
+  .diff-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .verdict-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 28px; }
+  .verdict-card { border-radius: 10px; border: 1px solid var(--border); padding: 16px 18px; }
+  .verdict-card.wins-mxw { border-left: 4px solid #3B82F6; }
+  .verdict-card.wins-cs { border-left: 4px solid #10B981; }
+  .verdict-card.tie { border-left: 4px solid #EAB308; }
+  .verdict-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  @media (max-width: 768px) { .comp-grid { grid-template-columns: 1fr; } .verdict-grid { grid-template-columns: 1fr; } }
+
+  /* Conversation examples */
+  .conv-section-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin: 24px 0 12px; }
+  .conv-examples-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .conv-example { background: var(--card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .conv-example-hdr { padding: 10px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .conv-example-hdr.hdr-blue { background: #EFF6FF; color: #1E40AF; }
+  .conv-example-hdr.hdr-orange { background: #FFF7ED; color: #92400E; }
+  .conv-example-hdr.hdr-red { background: #FEF2F2; color: #991B1B; }
+  .conv-example-hdr.hdr-green { background: #F0FDF4; color: #166534; }
+  .conv-example-body { padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; }
+  .conv-msg { padding: 7px 10px; border-radius: 8px; font-size: 12px; line-height: 1.45; }
+  .conv-msg.usr { background: #EFF6FF; color: #1E3A5F; border-radius: 8px 8px 3px 8px; }
+  .conv-msg.bot { background: #F9FAFB; border: 1px solid var(--border); border-radius: 8px 8px 8px 3px; color: #374151; }
+  .conv-msg.rep { background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 8px 8px 8px 3px; color: #166534; }
+  .conv-msg-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
+  .conv-csat-badge { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 8px; background: #FEE2E2; color: #991B1B; }
+  .conv-csat-badge.c2 { background: #FEF3C7; color: #92400E; }
+  .conv-csat-badge.c3 { background: #FEF9C3; color: #713F12; }
+  .conv-channel-badge { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 8px; background: #DBEAFE; color: #1E40AF; }
+  .conv-channel-badge.cs { background: #D1FAE5; color: #065F46; }
+  @media (max-width: 768px) { .conv-examples-grid { grid-template-columns: 1fr; } }
+
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <span class="badge">CX Analytics</span>
+    <span class="badge blue">MLB</span>
+    <span class="badge gray">Point · MXW + CS</span>
+    <span class="badge red">Detratores</span>
+  </div>
+  <h1>Análise de Detratores — Produto Point Brasil</h1>
+  <div class="header-meta">
+    <span>&#x1F4C5; Janeiro – Março 2026</span>
+    <span>&#x1F30E; Brasil (MLB)</span>
+    <span>&#x1F916; AI_CONVERSATION (MXW) + Caso Manual (CS)</span>
+    <span>&#x1F4CA; CSAT 1–3 · Jan–Mar 2026</span>
+  </div>
+</div>
+
+<nav class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab(this,'tab-l2')">&#x1F4CA; Visão por L2</button>
+  <button class="tab-btn" onclick="switchTab(this,'tab-transcricoes')">&#x1F50D; Análise de Transcrições</button>
+  <button class="tab-btn" onclick="switchTab(this,'tab-analitica')">&#x1F4C8; Visão Analítica</button>
+  <button class="tab-btn" onclick="switchTab(this,'tab-cx')">&#x1F504; CX vs MXW</button>
+</nav>
+
+
+<div id="tab-l2" class="tab-panel active">
+  <div class="main">
+
+  <div class="summary-row">
+    <div class="stat-card">
+      <div class="label">L1</div>
+      <div class="value" style="font-size:18px">Point</div>
+      <div class="sub">Tipificação nível 1</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Total Detratores MXW</div>
+      <div class="value">3.120</div>
+      <div class="sub">CSAT_RATING 1–3 · Jan–Mar 2026</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">CSAT Total Point MLB</div>
+      <div class="value" style="color:var(--mp-blue)">71,7%</div>
+      <div class="sub">referência para gap por L2</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Maior gap (% Detrator)</div>
+      <div class="value" style="color:var(--t1)">Reconciliation 39,5%</div>
+      <div class="sub">pior taxa de detração entre L2s</div>
+    </div>
+  </div>
+
+  <div class="section-title">Distribuição por L2 (Tipificação Nível 2)</div>
+
+  <div class="chart-card">
+    <h2>Detratores por L2 — volume e CSAT</h2>
+
+    <div class="bar-row">
+      <div class="bar-label" style="width:260px">Hardware faults &amp; RMA</div>
+      <div class="bar-track"><div class="bar-fill" style="width:50.2%;background:var(--t3)"><span>1.567</span></div></div>
+      <div class="bar-count" style="width:140px;font-size:12px">27,8% det · CSAT 72,2%</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label" style="width:260px">Payment acceptance</div>
+      <div class="bar-track"><div class="bar-fill" style="width:27.1%;background:var(--t1)"><span>845</span></div></div>
+      <div class="bar-count" style="width:140px;font-size:12px">36,5% det · CSAT 63,5%</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label" style="width:260px">Account &amp; entitlement</div>
+      <div class="bar-track"><div class="bar-fill" style="width:19.7%;background:var(--t3)"><span>616</span></div></div>
+      <div class="bar-count" style="width:140px;font-size:12px">23,4% det · CSAT 76,6%</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label" style="width:260px">Shipments &amp; returns</div>
+      <div class="bar-track"><div class="bar-fill" style="width:14.5%;background:var(--t2)"><span>452</span></div></div>
+      <div class="bar-count" style="width:140px;font-size:12px">32,2% det · CSAT 67,8%</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label" style="width:260px">Cellular/SIM</div>
+      <div class="bar-track"><div class="bar-fill" style="width:12.4%;background:var(--t6)"><span>388</span></div></div>
+      <div class="bar-count" style="width:140px;font-size:12px">20,8% det · CSAT 79,2%</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label" style="width:260px">Reconciliation</div>
+      <div class="bar-track"><div class="bar-fill" style="width:6.8%;background:var(--t1)"><span>211</span></div></div>
+      <div class="bar-count" style="width:140px;font-size:12px">39,5% det · CSAT 60,5%</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label" style="width:260px">Otros</div>
+      <div class="bar-track"><div class="bar-fill" style="width:1.3%;background:var(--t7)"><span>41</span></div></div>
+      <div class="bar-count" style="width:140px;font-size:12px">23,8% det · CSAT 76,2%</div>
+    </div>
+  </div>
+
+  <div class="chart-card">
+    <h2>Tabela completa por L2 — ordenado por volume de detratores</h2>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:16px">MXW Enc = encuestas MXW. CS Surveys = surveys via CS. Gap vs Total = CSAT L2 − CSAT total 71,7%.</p>
+    <table class="ex-table" style="width:100%">
+      <thead>
+        <tr>
+          <th>L2</th>
+          <th style="text-align:right">MXW Enc</th>
+          <th style="text-align:right">MXW Det</th>
+          <th style="text-align:right">% Det</th>
+          <th style="text-align:right">CSAT MXW</th>
+          <th style="text-align:right">CS Surveys</th>
+          <th style="text-align:right">CS NPS</th>
+          <th style="text-align:right">Gap vs Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Hardware faults &amp; RMA</td>
+          <td style="text-align:right">5.645</td>
+          <td style="text-align:right">1.567</td>
+          <td style="text-align:right">27,8%</td>
+          <td style="text-align:right">72,2%</td>
+          <td style="text-align:right">4.464</td>
+          <td style="text-align:right">66,6%</td>
+          <td style="text-align:right;color:#10B981;font-weight:700">+0,5 pp</td>
+        </tr>
+        <tr>
+          <td>Payment acceptance</td>
+          <td style="text-align:right">2.318</td>
+          <td style="text-align:right">845</td>
+          <td style="text-align:right">36,5%</td>
+          <td style="text-align:right">63,5%</td>
+          <td style="text-align:right">800</td>
+          <td style="text-align:right">52,7%</td>
+          <td style="text-align:right;color:#EF4444;font-weight:700">−8,2 pp</td>
+        </tr>
+        <tr>
+          <td>Shipments &amp; returns</td>
+          <td style="text-align:right">1.405</td>
+          <td style="text-align:right">452</td>
+          <td style="text-align:right">32,2%</td>
+          <td style="text-align:right">67,8%</td>
+          <td style="text-align:right">1.779</td>
+          <td style="text-align:right">73,0%</td>
+          <td style="text-align:right;color:#EF4444;font-weight:700">−3,9 pp</td>
+        </tr>
+        <tr>
+          <td>Account &amp; entitlement</td>
+          <td style="text-align:right">2.634</td>
+          <td style="text-align:right">616</td>
+          <td style="text-align:right">23,4%</td>
+          <td style="text-align:right">76,6%</td>
+          <td style="text-align:right">1.788</td>
+          <td style="text-align:right">73,2%</td>
+          <td style="text-align:right;color:#10B981;font-weight:700">+4,9 pp</td>
+        </tr>
+        <tr>
+          <td>Cellular/SIM</td>
+          <td style="text-align:right">1.861</td>
+          <td style="text-align:right">388</td>
+          <td style="text-align:right">20,8%</td>
+          <td style="text-align:right">79,2%</td>
+          <td style="text-align:right">1.413</td>
+          <td style="text-align:right">78,2%</td>
+          <td style="text-align:right;color:#10B981;font-weight:700">+7,5 pp</td>
+        </tr>
+        <tr>
+          <td>Reconciliation</td>
+          <td style="text-align:right">533</td>
+          <td style="text-align:right">211</td>
+          <td style="text-align:right">39,5%</td>
+          <td style="text-align:right">60,5%</td>
+          <td style="text-align:right">297</td>
+          <td style="text-align:right">64,7%</td>
+          <td style="text-align:right;color:#EF4444;font-weight:700">−11,2 pp</td>
+        </tr>
+        <tr>
+          <td>Otros</td>
+          <td style="text-align:right">174</td>
+          <td style="text-align:right">41</td>
+          <td style="text-align:right">23,8%</td>
+          <td style="text-align:right">76,2%</td>
+          <td style="text-align:right">25</td>
+          <td style="text-align:right">76,0%</td>
+          <td style="text-align:right;color:#10B981;font-weight:700">+4,5 pp</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr style="border-top:2px solid var(--border);font-weight:600">
+          <td>TOTAL Point MLB (MXW)</td>
+          <td style="text-align:right">14.594</td>
+          <td style="text-align:right">3.120</td>
+          <td style="text-align:right">—</td>
+          <td style="text-align:right">71,7%</td>
+          <td style="text-align:right">—</td>
+          <td style="text-align:right">—</td>
+          <td style="text-align:right">—</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  </div>
+</div>
+
+
+<div id="tab-transcricoes" class="tab-panel">
+  <div class="main">
+
+  <!-- HW SECTION -->
+  <div class="section-header">
+    <h2>Hardware faults &amp; RMA</h2>
+    <span class="l2-badge" style="background:#FEE2E2;color:#991B1B">27,8% det &middot; CSAT 72,2%</span>
+    <span class="l2-badge" style="background:#DBEAFE;color:#1E40AF;margin-left:4px">1.567 detratores MXW</span>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Clusters de Causa Raiz — Hardware</div>
+    <div class="card-body">
+
+      
+<div class="cluster">
+  <div class="cluster-header" onclick="tog(this)">
+    <div class="cluster-dot" style="background:#EF4444"></div>
+    <div class="cluster-info">
+      <div class="name">HW-1 — Falha elétrica / Maquininha não liga</div>
+      <div class="desc">Sellers reportam Point Smart sem resposta ao carregador</div>
+    </div>
+    <div class="cluster-right">
+      <div>
+        <div class="cluster-pct" style="color:#EF4444">38%</div>
+        <div class="cluster-count">~596 casos</div>
+      </div>
+      <div class="cluster-bar-wrap">
+        <div class="cluster-bar-fill" style="background:#EF4444;width:38%"></div>
+      </div>
+      <span class="chevron">&#x25BE;</span>
+    </div>
+  </div>
+  <div class="cluster-body">
+    
+<p style="font-size:13px;margin-bottom:12px">Sellers reportam Point Smart que não liga mesmo conectada, sem resposta ao carregador. O bot oferece upgrade imediato antes de diagnosticar o problema, gerando frustração adicional.</p>
+<div class="sub-label">Trechos representativos</div>
+<div class="quote-block"><div class="meta">MXW · CSAT 1 · ID 1597daff-e296-46f6-b8c5-6f0b079610a4</div>“Minha máquina não está funcionando” → BOT: “Entendi. Antes de qualquer teste, tenho uma oferta especial para trocar seu Point por um modelo novo com desconto e compra imediata. Quer aproveitar a oferta de upgrade agora?”</div>
+<div class="quote-block"><div class="meta">CS · CAS_CASE_ID 436803421</div>“a minha maquininha parou de funcionar / não está ligando”</div>
+<div class="quote-block"><div class="meta">MXW · CSAT 1 · padrão recorrente</div>“Tentei de tudo, carregador novo, tomada diferente, nada funciona. A máquina está morta.”</div>
+<div class="sub-label" style="margin-top:14px">CONVERSATION_IDs (MXW) — 68 registros</div>
+<div class="conv-ids"><span>586b7f8a-fa91-4ca5-ac73-3712a5dc5f86</span> <span>ade11cd9-6e15-451f-b9fb-fd1ef1b1a089</span> <span>c1bf6ab6-aeaf-4749-823c-916d388ae527</span> <span>24e37b52-53a8-488d-897c-151a29ef7fc1</span> <span>e5c44a04-5743-4dd5-8655-19e2072d8792</span> <span>b50c704f-df5d-4bae-afaf-b27fc758d8f9</span> <span>ea032722-1069-4a5c-bf2b-721f91269003</span> <span>4fc32587-633a-4443-b6b5-7e8c291ecc08</span> <span>1597daff-e296-46f6-b8c5-6f0b079610a4</span> <span>a9d32fe3-118a-4ca2-ad4c-deacbca258fa</span> <span>5d8a890a-ba05-4015-ba69-66e46c6ad4a7</span> <span>3e6a61e9-ed95-42e4-90c3-065795a370a3</span> <span>e3a4c63f-70f5-4dda-8fb0-1afc20d616ea</span> <span>b2c8a2d0-54cb-443a-b736-149f9dcbaa2d</span> <span>0a7cd756-3d40-49c0-ab92-78139f68c6d3</span> <span>c275e427-fa45-40eb-b3a5-6b2e973f14c4</span> <span>a998591d-5373-49ce-851b-4fb95a714cc6</span> <span>11ac8b0d-e3fe-4fa3-a643-d68adf6d1cd9</span> <span>ff03ee24-1a96-4d9d-a7ad-cbb4364d8a3f</span> <span>a6364c53-c01d-4a03-976b-ff1b3d515c32</span> <span>e0323998-01fd-4cfd-b5cc-c30a575709c2</span> <span>d8a7c465-3a03-435c-a4b7-3371d86892b9</span> <span>c32e2f69-2027-4188-bf68-dfabe6b97f33</span> <span>392e899a-6b80-458d-8d72-d4406d6f0daa</span> <span>4e91a5c7-cd56-4247-8100-f965cfb283f1</span> <span>17026e3e-e050-4c9a-be28-167715f691b2</span> <span>957257fa-60a3-4e52-94c8-9b7cb4c653b4</span> <span>9541ad89-d074-4fd6-b55d-3f3bf88ae88c</span> <span>aef5a3d8-7def-4b07-a56e-063a0b83264d</span> <span>d73125c3-9b7e-4301-9630-6d2295548287</span> <span>6aee1770-e382-4f14-930f-e2b91dd50e1d</span> <span>b4c05d24-8ade-4792-a46a-9df64135a622</span> <span>94c17a0a-1d2c-4309-9e35-183cd595a803</span> <span>afae2035-2475-4b9b-ba03-e5010b8d9def</span> <span>7751ab20-51a4-4997-86e7-74228be6b54b</span> <span>1aee8319-51bb-4730-b7c5-1c626a4937d8</span> <span>ed0a7775-6ed6-4697-9a2d-528bbf03d418</span> <span>9f7c3b59-a9fb-4e06-884d-695863183271</span> <span>752292a8-f1c5-45c2-bf89-ccdc84d2bc49</span> <span>b0a9ea7d-a14b-45eb-a6ee-1e28237d06e0</span> <span>7d68349c-55ce-4e0a-bc88-2ead71187d86</span> <span>175568e6-6870-40e8-9672-9d2f5ea5b165</span> <span>d504bd7b-d00e-41e9-b228-29469e6e3c55</span> <span>319d16bd-0bdd-48b3-b265-220ff20b7b8e</span> <span>5363d732-2fdd-472c-bb42-2ac7b1d06a38</span> <span>2e70cd72-15a6-44ab-a1d7-1eb2422784db</span> <span>528a93b1-9707-49e5-8c6e-be8eaecc9608</span> <span>c24501db-5ca9-4f77-8044-6ef417cf9214</span> <span>e4672228-0f89-4fa7-9db7-7eb0d91f44d4</span> <span>83c49f48-ff3d-43d7-8702-d09ec8ee72cd</span> <span>1c1007a4-b641-41c8-ba92-e1333dd93d92</span> <span>6273caa4-2c76-446c-9fb3-281a2bde99e1</span> <span>898b8bdd-c862-4694-8bbf-be59d88c146b</span> <span>a2774177-d6dd-41c6-9702-098db4ffcce2</span> <span>46d1ec32-95d6-4172-9f59-f0b0d334e3e1</span> <span>434aafa6-bb98-450f-83a1-dbc999e82b00</span> <span>6ba138e3-10c7-4553-a28b-bfb855053b70</span> <span>09724dd9-0a4f-4f26-b973-82838a38c00e</span> <span>95e094d1-d832-4766-ac8c-6786ebf9e125</span> <span>bea35bb9-501b-4ab1-b6fa-ff211f5e8c5e</span> <span>d266b4f8-7e21-4028-b329-0113984e15cc</span> <span>5828b912-a2ff-4482-addb-cc4aa8d59703</span> <span>92e73ae1-045f-4aa7-9aaf-f0ef3091acf3</span> <span>f6d3a5f2-2ad0-43f7-a609-a25ae71d435c</span> <span>59be9e51-5443-4086-b317-c67f90bf9e35</span> <span>010e7948-2344-4363-adba-8a2b0831f7e9</span> <span>9664b140-dca7-4f97-8c1d-4d674feb6d47</span> <span>d9060821-5ba0-4228-b0cb-f2487048c98e</span></div>
+<div class="sub-label" style="margin-top:10px">CAS_CASE_IDs (CS) — 49 registros</div>
+<div class="conv-ids"><span>436803421</span> <span>431572425</span> <span>434282876</span> <span>427875147</span> <span>427013418</span> <span>427212429</span> <span>433594834</span> <span>431469470</span> <span>441429813</span> <span>431193719</span> <span>429836889</span> <span>429112013</span> <span>447142654</span> <span>428684400</span> <span>439604722</span> <span>440356356</span> <span>431682027</span> <span>435053698</span> <span>443452341</span> <span>445317454</span> <span>430921439</span> <span>430860390</span> <span>441513065</span> <span>433453117</span> <span>427203664</span> <span>435816026</span> <span>434122625</span> <span>442830333</span> <span>433972577</span> <span>438775650</span> <span>434015195</span> <span>432846267</span> <span>427581640</span> <span>435370697</span> <span>439037979</span> <span>442861291</span> <span>445255525</span> <span>427160250</span> <span>430202433</span> <span>445719378</span> <span>427071760</span> <span>429091660</span> <span>442894395</span> <span>428270862</span> <span>428326144</span> <span>432463052</span> <span>427896721</span> <span>445539817</span> <span>440414448</span></div>
+
+  </div>
+</div>
+      
+<div class="cluster">
+  <div class="cluster-header" onclick="tog(this)">
+    <div class="cluster-dot" style="background:#F97316"></div>
+    <div class="cluster-info">
+      <div class="name">HW-2 — POS Tampered / Adulteração detectada</div>
+      <div class="desc">Terminal bloqueado por sensor antiadulteração</div>
+    </div>
+    <div class="cluster-right">
+      <div>
+        <div class="cluster-pct" style="color:#F97316">20%</div>
+        <div class="cluster-count">~313 casos</div>
+      </div>
+      <div class="cluster-bar-wrap">
+        <div class="cluster-bar-fill" style="background:#F97316;width:20%"></div>
+      </div>
+      <span class="chevron">&#x25BE;</span>
+    </div>
+  </div>
+  <div class="cluster-body">
+    
+<p style="font-size:13px;margin-bottom:12px">Terminal bloqueado por detecção de adulteração (POS TAMPERED), impedindo qualquer venda. Impacto físico acidental aciona sensor antiadulteração. MXW não possui ferramenta de desbloqueio; CS encaminha RMA com prazo longo.</p>
+<div class="sub-label">Trechos representativos</div>
+<div class="quote-block"><div class="meta">MXW · CSAT 1 · padrão recorrente</div>“Minha maquininha mostrou a mensagem POS TAMPERED e parou de funcionar. Não consigo realizar nenhuma venda.”</div>
+<div class="quote-block"><div class="meta">CS · padrão recorrente</div>“A máquina caiu no chão e depois apareceu POS TAMPERED, não abre mais.”</div>
+<div class="quote-block"><div class="meta">MXW · CSAT 2 · padrão recorrente</div>“Pedi troca há 15 dias e ainda não chegou a nova máquina.”</div>
+<div class="sub-label" style="margin-top:14px">CONVERSATION_IDs (MXW) — 36 registros</div>
+<div class="conv-ids"><span>19d9ef5b-847f-4a20-8e6d-87448477e99d</span> <span>53af78d7-e4eb-48d0-b28d-a7411b5eb0f7</span> <span>5656e72d-fcfd-420a-a1eb-18b922b1e60f</span> <span>7580af8d-1a92-4888-9421-3aff4c2fc280</span> <span>9f95bfb9-1c43-4aca-8a12-0df801bda92d</span> <span>d696aaa5-4c00-4774-84af-60ea7f7c3baa</span> <span>2eba2c01-5319-4a08-99d1-9029926c9419</span> <span>cf87d421-933f-447b-9d71-3dc1206941f9</span> <span>f2ebd13d-70c4-46d1-aadc-0b812e33fa00</span> <span>f5cce04b-e8fa-460e-a939-63bf3d1e49dd</span> <span>fb125076-6b0a-4133-99d8-b8a1d9b098f6</span> <span>6df67301-9729-4b41-8548-d1c4a713f38b</span> <span>0dce1efb-2bec-4147-8430-b039b502ffb2</span> <span>bd3902c4-42ed-4e29-97ee-e5fa3b462a08</span> <span>d2639b43-6f1e-42f2-b125-a93d3bf036ca</span> <span>b4654aba-3d84-4549-b631-93fe529b2859</span> <span>a5f58c3d-0c14-4b67-af50-fa8ccbfd235a</span> <span>8bc92353-8577-4eb8-8fc7-002d1eb0d753</span> <span>b2b25290-19b4-44c9-a2f0-5a41786b7922</span> <span>b9b60dd6-87ce-4ab8-b764-d1dfe2dd5262</span> <span>57b9fc7b-2adf-4892-ab05-fc41c390e065</span> <span>8a2ff83a-c1fd-4348-82be-5982e128683e</span> <span>e7fbc490-a88d-43b9-b82d-843f21e41ed6</span> <span>b7a2a6c2-1ee8-4ea1-94c0-da1dac29417a</span> <span>3505247a-3fd4-4193-a9d0-0dde7a1ff1e8</span> <span>b79c613e-a2a6-4e2f-8cf1-e4037d7466e2</span> <span>e4ce5e76-3dae-4c2d-93d9-4c4571599ed5</span> <span>994fe616-726f-4636-a98e-e9ee6e06a341</span> <span>0521e8ba-53ef-4a07-9c6c-28779b773a64</span> <span>7a7b1cac-8ba8-487d-89a0-a6c2682a0413</span> <span>393490ce-24db-490c-8458-c1423f73432e</span> <span>b6001bca-fab4-4924-bb29-91d3234cf8df</span> <span>44852f5f-d9e7-4e05-af9b-cb81b811b9c4</span> <span>e38219bc-cf59-478a-8e3a-c364e89203a1</span> <span>5eb186a0-e403-483a-be78-1265eb9c7ff8</span> <span>20fd841b-6d8a-40eb-87f0-8c3cb8834edb</span></div>
+<div class="sub-label" style="margin-top:10px">CAS_CASE_IDs (CS) — 26 registros</div>
+<div class="conv-ids"><span>447056246</span> <span>438223604</span> <span>437237308</span> <span>438908658</span> <span>433112208</span> <span>430080307</span> <span>443354661</span> <span>431319892</span> <span>435360883</span> <span>436956527</span> <span>435406368</span> <span>437164875</span> <span>434269310</span> <span>436803398</span> <span>427152928</span> <span>429004129</span> <span>429677883</span> <span>444777029</span> <span>446013438</span> <span>430674352</span> <span>436832074</span> <span>431658553</span> <span>430541167</span> <span>447651264</span> <span>427866634</span> <span>431250225</span></div>
+
+  </div>
+</div>
+      
+<div class="cluster">
+  <div class="cluster-header" onclick="tog(this)">
+    <div class="cluster-dot" style="background:#EAB308"></div>
+    <div class="cluster-info">
+      <div class="name">HW-3 — RMA frustrante — processo demorado</div>
+      <div class="desc">Sellers aguardam coleta ou troca há semanas</div>
+    </div>
+    <div class="cluster-right">
+      <div>
+        <div class="cluster-pct" style="color:#EAB308">18%</div>
+        <div class="cluster-count">~282 casos</div>
+      </div>
+      <div class="cluster-bar-wrap">
+        <div class="cluster-bar-fill" style="background:#EAB308;width:18%"></div>
+      </div>
+      <span class="chevron">&#x25BE;</span>
+    </div>
+  </div>
+  <div class="cluster-body">
+    
+<p style="font-size:13px;margin-bottom:12px">Sellers já abriram RMA mas aguardam coleta, troca ou resolução há semanas. MXW não tem ferramenta para acompanhar status de RMA em tempo real. Principais frições: datas de coleta não confirmadas, equipamento sem laudo.</p>
+<div class="sub-label">Trechos representativos</div>
+<div class="quote-block"><div class="meta">MXW · CSAT 1 · padrão recorrente</div>“Já fiz o RMA há 3 semanas e até agora ninguém veio buscar minha máquina.”</div>
+<div class="quote-block"><div class="meta">CS · padrão recorrente</div>“Abri solicitação de troca pelo app mas não recebi confirmação de coleta.”</div>
+<div class="quote-block"><div class="meta">MXW · CSAT 2 · padrão recorrente</div>“Disseram que minha máquina seria trocada em 5 dias úteis e já passou de 20 dias.”</div>
+<div class="sub-label" style="margin-top:14px">CONVERSATION_IDs (MXW) — 32 registros</div>
+<div class="conv-ids"><span>d4c5beb1-8efd-4d08-aae7-48e64db7c37f</span> <span>4ab10800-20ca-4e6a-b660-a125c32627ff</span> <span>13e3e09c-559b-4efd-8285-d6cc5f6261ff</span> <span>5efc555d-5cb2-4914-b955-546d42bc0baa</span> <span>b9d07400-d575-4663-b7b3-c4fd264e06bf</span> <span>e2ba7c36-8b58-4db0-a547-4943cb68b3bd</span> <span>56435759-1743-48c0-b85e-79fa9eff0a2d</span> <span>e858c023-f3e5-4cd3-a7cc-10aa5e3597e5</span> <span>e9f3641d-6091-4545-a0d3-d71ced9809c7</span> <span>309dea7c-4ec3-48ed-af38-3ea8849009c3</span> <span>f0493c62-c67c-41ca-9ef0-adb51c6e11be</span> <span>3b099eee-4b28-40f1-9747-fff8e16bcf99</span> <span>936482de-9cda-4303-ab21-abf6b91099bc</span> <span>04eea91c-6b6d-4f2f-9b64-1a250a6bf73c</span> <span>6bdf3842-6ce8-414d-a5b2-3ee5300b06ff</span> <span>612debae-2bef-4c17-9bd2-aaeb0dfb896b</span> <span>8a1d3686-216b-494a-a881-3cf78c7d7fbb</span> <span>9075e6bb-72f0-4dec-922a-97ec8e6b6758</span> <span>12cbe0ce-631b-4d4f-b04d-2ca5e1582dbd</span> <span>20e7bfed-ed8f-4c89-9846-f5852f922b95</span> <span>9a25ddb5-c2f6-483e-b406-2a888c4262ca</span> <span>4bb357e8-7ba0-4e98-a457-ea2e05d545d7</span> <span>afd753d8-4847-4a7d-9a22-317f9bc2df6c</span> <span>1024dc63-9056-482e-abff-48ecfbba24f1</span> <span>d1118721-7a4a-4641-b05d-69c6b7e81da2</span> <span>bcdad48c-84a9-49d5-ae34-dce2a3138da7</span> <span>c76f371d-093f-4abd-bb03-f76714bfb3fd</span> <span>49a8a4b0-9cdd-4a06-b3e2-7e537c97cac2</span> <span>35743078-ff12-40e3-8e42-57c80a5c3b60</span> <span>c6d550c7-8f92-4b10-bbe4-bfa3c4bb509c</span> <span>31907373-8e3d-47b9-a078-55c6840ddc3e</span> <span>75b43bc5-85ea-40d6-90bf-b1c582ab1e74</span></div>
+<div class="sub-label" style="margin-top:10px">CAS_CASE_IDs (CS) — 23 registros</div>
+<div class="conv-ids"><span>442791491</span> <span>431001781</span> <span>433851656</span> <span>446356600</span> <span>440945123</span> <span>428933358</span> <span>427475583</span> <span>436568005</span> <span>440513924</span> <span>431676326</span> <span>427170665</span> <span>446550187</span> <span>438643810</span> <span>431257813</span> <span>442448530</span> <span>429688076</span> <span>437384155</span> <span>431949606</span> <span>431773734</span> <span>430654034</span> <span>435162111</span> <span>427059990</span> <span>434425190</span></div>
+
+  </div>
+</div>
+      
+<div class="cluster">
+  <div class="cluster-header" onclick="tog(this)">
+    <div class="cluster-dot" style="background:#3B82F6"></div>
+    <div class="cluster-info">
+      <div class="name">HW-4 — Problemas de conectividade</div>
+      <div class="desc">WiFi, Bluetooth, SIM desconectando durante transações</div>
+    </div>
+    <div class="cluster-right">
+      <div>
+        <div class="cluster-pct" style="color:#3B82F6">14%</div>
+        <div class="cluster-count">~219 casos</div>
+      </div>
+      <div class="cluster-bar-wrap">
+        <div class="cluster-bar-fill" style="background:#3B82F6;width:14%"></div>
+      </div>
+      <span class="chevron">&#x25BE;</span>
+    </div>
+  </div>
+  <div class="cluster-body">
+    
+<p style="font-size:13px;margin-bottom:12px">WiFi, Bluetooth e SIM desconectando durante transações. MXW orienta reset de rede mas não verifica status do chip/SIM remotamente. Causa raiz frequente: cobertura de operadora institução e firmware desatualizado.</p>
+<div class="sub-label">Trechos representativos</div>
+<div class="quote-block"><div class="meta">MXW · CSAT 2 · padrão recorrente</div>“Minha maquininha fica perdendo sinal do chip durante as vendas, já perdi clientes por isso.”</div>
+<div class="quote-block"><div class="meta">CS · padrão recorrente</div>“O bluetooth não conecta mais com meu celular depois da última atualização.”</div>
+<div class="sub-label" style="margin-top:14px">CONVERSATION_IDs (MXW) — 25 registros</div>
+<div class="conv-ids"><span>4f36e3a0-e75d-43ba-aee4-0d0e25d24b42</span> <span>82c3b088-98c8-483e-9e1a-4db2039d5291</span> <span>f4a82f8f-8d3a-4edf-860f-af02880ce4d9</span> <span>7ae6ca8b-b594-459c-9c0f-45aef1fa1389</span> <span>934827fc-cf0a-4eda-a82e-2325cac3d444</span> <span>b7492afa-12e2-4373-a14d-b068fe4506f4</span> <span>584738be-1899-46e7-98d2-74ca0417fc42</span> <span>39e0394d-33a0-4501-8d9f-0b36f4fbb1bc</span> <span>06201dbd-61ee-4156-92bd-25905608b518</span> <span>7d1eed44-d49b-419e-b1a6-7f4ab791dd88</span> <span>87016076-42ba-4c82-b0c5-204fd24ebf0c</span> <span>749bd6a5-217f-4aea-a700-212c305e0cd6</span> <span>8286b693-649a-44e5-926c-2460840ce590</span> <span>9b16ed6e-8a68-4f1d-8fbe-6a9e55f28820</span> <span>c44cab63-87ed-490f-8d4d-ddda79c7ea92</span> <span>60298565-97b2-44db-9c30-ae79406a27fe</span> <span>c24fb648-1e78-4aa3-ad9a-79fa5e5a4b69</span> <span>2f2a0593-8c81-46d4-9602-b8f86b032a7a</span> <span>94028706-7bd5-4bf7-94d3-8d9bc06a9280</span> <span>1390355a-d3f7-4a09-bc2a-3aa13e4606fb</span> <span>8bd945f9-c0bb-4f08-92c2-91b3728a21b5</span> <span>8dcb127f-45b1-4368-84a2-53d2207fd8d0</span> <span>649bb34c-7749-4085-a65a-d0222cb31e0e</span> <span>8cd7aab4-e891-4342-a0ff-5e895253f759</span> <span>2928000e-40d4-413a-b840-f9db3cb8e3a4</span></div>
+<div class="sub-label" style="margin-top:10px">CAS_CASE_IDs (CS) — 18 registros</div>
+<div class="conv-ids"><span>430301848</span> <span>430528749</span> <span>443110394</span> <span>427856216</span> <span>434481387</span> <span>446132137</span> <span>431857099</span> <span>440232574</span> <span>430850971</span> <span>447682227</span> <span>427182124</span> <span>443878179</span> <span>445328899</span> <span>430043071</span> <span>439816543</span> <span>444768617</span> <span>428428505</span> <span>438123995</span></div>
+
+  </div>
+</div>
+      
+<div class="cluster">
+  <div class="cluster-header" onclick="tog(this)">
+    <div class="cluster-dot" style="background:#8B5CF6"></div>
+    <div class="cluster-info">
+      <div class="name">HW-5 — Impressora / Leitor de cartão</div>
+      <div class="desc">Impressora travada, chip rejeitando cartões válidos</div>
+    </div>
+    <div class="cluster-right">
+      <div>
+        <div class="cluster-pct" style="color:#8B5CF6">10%</div>
+        <div class="cluster-count">~157 casos</div>
+      </div>
+      <div class="cluster-bar-wrap">
+        <div class="cluster-bar-fill" style="background:#8B5CF6;width:10%"></div>
+      </div>
+      <span class="chevron">&#x25BE;</span>
+    </div>
+  </div>
+  <div class="cluster-body">
+    
+<p style="font-size:13px;margin-bottom:12px">Impressora de comprovante não imprime (travamento de papel, cabeça térmica). Leitor de chip rejeitando cartões válidos. Problemas frequentemente diagnosticados como hardware, encerrando em RMA.</p>
+<div class="sub-label">Trechos representativos</div>
+<div class="quote-block"><div class="meta">MXW · CSAT 1 · padrão recorrente</div>“A impressora da minha máquina não imprime mais o comprovante para o cliente.”</div>
+<div class="quote-block"><div class="meta">CS · padrão recorrente</div>“Os cartões com chip não estão sendo lidos na minha Point, só aceita aproximação.”</div>
+<div class="sub-label" style="margin-top:14px">CONVERSATION_IDs (MXW) — 19 registros</div>
+<div class="conv-ids"><span>2d5d536a-5e06-453a-b4c1-7ca2a48a2939</span> <span>06584a02-28d6-4f54-a991-069c01b66b3a</span> <span>d207bb60-775b-46af-ad39-fb248e5f3341</span> <span>01e5e34c-8969-4ab3-a448-c8c8ee52d774</span> <span>8664e692-0e8c-49cf-9c31-0ee45b97759c</span> <span>61113c43-4d79-46cb-8169-936770cac9af</span> <span>13e24f61-e2d5-4904-a868-b574c30f375d</span> <span>65602614-073b-445a-808a-42127900499d</span> <span>59e8848e-8932-4992-bad7-8f1b6e46f0cb</span> <span>bc0225b5-8e87-4bc4-989e-d000aa4c8788</span> <span>7e6a6aef-0d64-4b8c-9b65-8e5ebde54e23</span> <span>6df611e8-9541-413a-bc9e-66da123b1cda</span> <span>aad52a22-c898-4ed2-a107-573799f01016</span> <span>be59c131-0f0b-4d83-b153-f1b54dccfd6f</span> <span>ba0ff0e1-6757-462e-9d6a-37588027f871</span> <span>dbed8102-50cf-4804-8906-1e2cf066ba23</span> <span>343f5cb4-3303-43f4-b717-ab2bec0c509e</span> <span>d7ab850d-c3c9-45c3-aa48-62d1a08060d6</span> <span>f44245e2-8ef0-4112-9408-adbc372a7e50</span></div>
+<div class="sub-label" style="margin-top:10px">CAS_CASE_IDs (CS) — 14 registros</div>
+<div class="conv-ids"><span>434351867</span> <span>431977796</span> <span>433481065</span> <span>438714830</span> <span>436573127</span> <span>427796247</span> <span>429544854</span> <span>430035223</span> <span>433948012</span> <span>427156053</span> <span>431696455</span> <span>441114224</span> <span>435989731</span> <span>434691413</span></div>
+
+  </div>
+</div>
+
+    </div>
+  </div>
+
+  <!-- PAYMENT SECTION -->
+  <div class="section-header">
+    <h2>Payment acceptance</h2>
+    <span class="l2-badge" style="background:#FEE2E2;color:#991B1B">36,5% det &middot; CSAT 63,5% — PIOR L2</span>
+    <span class="l2-badge" style="background:#DBEAFE;color:#1E40AF;margin-left:4px">845 detratores MXW</span>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Clusters de Causa Raiz — Pagamento</div>
+    <div class="card-body">
+
+      
+<div class="cluster">
+  <div class="cluster-header" onclick="tog(this)">
+    <div class="cluster-dot" style="background:#EF4444"></div>
+    <div class="cluster-info">
+      <div class="name">PAY-1 — Recusa por risco/antifraude</div>
+      <div class="desc">Sistema recusa transações sem motivo claro ao seller</div>
+    </div>
+    <div class="cluster-right">
+      <div>
+        <div class="cluster-pct" style="color:#EF4444">42%</div>
+        <div class="cluster-count">~355 casos</div>
+      </div>
+      <div class="cluster-bar-wrap">
+        <div class="cluster-bar-fill" style="background:#EF4444;width:42%"></div>
+      </div>
+      <span class="chevron">&#x25BE;</span>
+    </div>
+  </div>
+  <div class="cluster-body">
+    
+<p style="font-size:13px;margin-bottom:12px">Sistema recusa transações de clientes sem motivo claro. IA explica a política mas não pode destravar vendas individualmente. Sellers perdem vendas e clientes in loco.</p>
+<div class="sub-label">Trechos representativos</div>
+<div class="quote-block"><div class="meta">CS · CAS_CASE_ID 429764107</div>“o cliente vai passar o cartão na minha maquininha...o pagamento não poderá ser realizado...já aconteceu várias vezes”</div>
+<div class="quote-block"><div class="meta">MXW · CSAT 3 · ID 29ac6347-35fc-4434-8c25-4ef42665ff60</div>“Passar cartão de crédito” → BOT orienta NFC vs maquininha mas não resolve a recusa de risco</div>
+<div class="quote-block"><div class="meta">MXW · CSAT 1 · padrão recorrente</div>“Minha máquina recusou 4 clientes seguidos hoje sem nenhuma explicação para eles.”</div>
+<div class="sub-label" style="margin-top:14px">CONVERSATION_IDs (MXW) — 76 registros</div>
+<div class="conv-ids"><span>2d7e39f6-e26b-49c9-b4e2-5ee2aa820029</span> <span>8427f588-b9da-4dbe-8749-d37a01bb95ac</span> <span>9636b636-39c7-4910-85f6-699b41586768</span> <span>6f621be0-09cc-45ac-bbc6-1eed86b174bf</span> <span>aaf643cc-6083-44e9-b051-ed56f8fef9ef</span> <span>8fd4f0d6-4a53-4bfa-b6bf-86a30278e0ef</span> <span>f075fe39-c9dc-4bf1-8776-ab2bb4c27477</span> <span>76d77914-f073-462f-aaea-2b0166fb27a4</span> <span>2ef501eb-8457-4a0c-a3e3-de121c1a73b9</span> <span>1a31c9ab-a13c-49be-8bd1-c26ce83ba602</span> <span>f6695266-cbb5-4a09-a804-7e179a78d79f</span> <span>81d59491-1792-4243-9be2-da462ab01cc7</span> <span>854fc49a-b582-4fb3-bf83-267ad2220781</span> <span>b2d561f9-2d27-4612-95bc-3594eee18436</span> <span>368655fc-dc42-45cf-8315-414476cacb4a</span> <span>901bdd64-3665-44be-bcb8-2b2b5b000b83</span> <span>615ec58e-c173-4e5f-8bec-7ac1438e7103</span> <span>29ac6347-35fc-4434-8c25-4ef42665ff60</span> <span>ccb09b01-5596-47d6-bc3b-819a4c5f1e63</span> <span>19c9adbd-dd53-4772-8744-0fbf64779a50</span> <span>e4c166a5-9dc6-4e42-9382-0cbccc8c327d</span> <span>77f9fd16-1a18-49ff-8382-091002a1de4b</span> <span>47c65247-11f8-4993-90e4-3ac770487290</span> <span>eb203790-ddf4-4614-90e5-bcee732b85ea</span> <span>cf401108-9af4-4a7a-9e35-d90c249ca369</span> <span>0e1be272-0b07-48a3-a929-1747f6cf3c0a</span> <span>cfcea1b6-5278-4428-a7cd-d5101092688f</span> <span>da798e04-4380-47a0-9b24-8928ae68139c</span> <span>91864b1e-f225-4ead-8803-0a20c536f2af</span> <span>141a2ce7-18fc-4a91-b2eb-403b73a7eefc</span> <span>c99e9822-ccaf-49d9-a2ac-8d0a28fc7e13</span> <span>3ca71f33-9e34-4f10-83e9-d24cca9209ba</span> <span>7ce9840d-e503-4d37-a44d-5f3ae9330b2b</span> <span>0e2ba15e-bb39-436e-b5ba-a79777c1d276</span> <span>e930b795-572b-4e34-8573-426f002f638e</span> <span>4786aa00-c801-4001-8c71-8affacb17f0e</span> <span>d0ce2eee-2844-448c-9e70-c607297e1858</span> <span>3ad8c99e-27d4-4ab1-8e8e-f64085349fc0</span> <span>c808462a-eea5-4a5b-affa-32af3fe6ec75</span> <span>86b4cc69-f4cc-4e59-965b-f040df0dd232</span> <span>7d54855d-464b-44b1-90aa-ee9d04ed1f16</span> <span>51c24896-ed2a-40bd-ba34-442756f8c047</span> <span>77ed5d49-3e07-485d-aac1-053d8e0252f9</span> <span>fae1fa24-e685-480b-aa87-6bd1a36ab5b4</span> <span>317bfdc5-ce70-470b-b40a-6a5163bce8d4</span> <span>e9606798-386f-47f4-8fa2-bb13cb219b0d</span> <span>97863d56-a51d-4aff-ad29-3959fd19f2c2</span> <span>be790d68-9759-4689-a965-5a53b9ea5a4b</span> <span>4762a693-3e13-4dcb-aa60-4cd890222f06</span> <span>80ab6a14-79ad-4892-9006-d0ca6c9b016f</span> <span>d7e08d28-fc05-44bf-87b7-edaeb10c6116</span> <span>491a37bc-3068-4357-830f-ba898ff11fe4</span> <span>b8aaf542-48a6-4fb6-9208-cbeffc3c9224</span> <span>209ecb47-4924-4622-a860-b125c931647a</span> <span>e8910019-fbad-49bc-871e-1aec7e84b139</span> <span>95df903e-f4de-4727-9ce4-b57a9e3d0660</span> <span>5b63165d-79a9-4b5c-977f-a4761dea0d7c</span> <span>345f5a01-3754-4b15-9a6d-2047400df1a4</span> <span>f4fe9ad6-c462-4c7f-b80b-034646eb8c5c</span> <span>00b13ce2-6c5a-4015-b027-d60f40247d72</span> <span>143d3568-d834-4e3a-9f30-1e929e480813</span> <span>c666fe47-b96c-490f-9fe8-4bd00546cbe9</span> <span>61c69426-659c-469f-81ed-38e6037df4a2</span> <span>ce56ac23-ad3f-45cb-b6d3-78e376242f51</span> <span>32688776-7bf2-400f-8ca5-0fd3fd3c9a39</span> <span>9f420c86-f47e-4920-96b6-c15e6609b68a</span> <span>740d3b22-421c-489d-a6a2-5b6a79625cee</span> <span>a141adbb-75ac-4515-839d-fc62627a97ae</span> <span>ba77c534-0336-4fd3-a869-d437df35227b</span> <span>983ba2c6-c022-41c8-8ec3-544e7c0ce6e7</span> <span>1e19b879-8df7-4aec-b152-7dc1645b8641</span> <span>8c9dcca8-e198-4584-9f83-17141e8378d8</span> <span>159cc479-d230-4950-97d2-2184e483c695</span> <span>d2f6c834-3206-4e5f-9037-194dc19051d9</span> <span>29acdc57-cbd9-420b-9fc0-18c494ba124d</span> <span>9c32b1a4-9b31-47bd-a961-a9a4b05fa411</span></div>
+<div class="sub-label" style="margin-top:10px">CAS_CASE_IDs (CS) — 55 registros</div>
+<div class="conv-ids"><span>429764107</span> <span>434750398</span> <span>431926343</span> <span>447360143</span> <span>434541404</span> <span>434868272</span> <span>430666800</span> <span>441509663</span> <span>429827969</span> <span>443124558</span> <span>431284585</span> <span>427025221</span> <span>446704074</span> <span>439004938</span> <span>445828718</span> <span>427378872</span> <span>427044151</span> <span>435541936</span> <span>431689337</span> <span>442046414</span> <span>433798136</span> <span>442412615</span> <span>447725018</span> <span>428311185</span> <span>441432245</span> <span>430398218</span> <span>435048773</span> <span>430493491</span> <span>443168261</span> <span>436884063</span> <span>438097119</span> <span>438134452</span> <span>447664822</span> <span>433378794</span> <span>431293291</span> <span>441192707</span> <span>439114641</span> <span>436774219</span> <span>427182624</span> <span>442529345</span> <span>447798384</span> <span>445037686</span> <span>429456593</span> <span>444243433</span> <span>440980561</span> <span>427840416</span> <span>446819838</span> <span>434918432</span> <span>441802296</span> <span>428191570</span> <span>442408860</span> <span>444430339</span> <span>434445926</span> <span>439382885</span> <span>439048075</span></div>
+
+  </div>
+</div>
+      
+<div class="cluster">
+  <div class="cluster-header" onclick="tog(this)">
+    <div class="cluster-dot" style="background:#F97316"></div>
+    <div class="cluster-info">
+      <div class="name">PAY-2 — Teto de valor / alto ticket recusado</div>
+      <div class="desc">Transações de alto valor rejeitadas automaticamente</div>
+    </div>
+    <div class="cluster-right">
+      <div>
+        <div class="cluster-pct" style="color:#F97316">22%</div>
+        <div class="cluster-count">~186 casos</div>
+      </div>
+      <div class="cluster-bar-wrap">
+        <div class="cluster-bar-fill" style="background:#F97316;width:22%"></div>
+      </div>
+      <span class="chevron">&#x25BE;</span>
+    </div>
+  </div>
+  <div class="cluster-body">
+    
+<p style="font-size:13px;margin-bottom:12px">Transações de alto valor rejeitadas automaticamente. Sellers não sabem o limite vigente e não conseguem ajustá-lo via MXW. Impacto direto em vendas de alto ticket.</p>
+<div class="sub-label">Trechos representativos</div>
+<div class="quote-block"><div class="meta">MXW · CSAT 1 · padrão recorrente</div>“Tentei cobrar R$2.800 de um cliente e recusou. Valores menores passam normal.”</div>
+<div class="quote-block"><div class="meta">CS · padrão recorrente</div>“Qual é o limite máximo que posso cobrar por transação? Como faço para aumentar?”</div>
+<div class="quote-block"><div class="meta">MXW · CSAT 2 · padrão recorrente</div>“Preciso cobrar valores acima de R$5.000 no meu salão. Minha maquininha não aceita.”</div>
+<div class="sub-label" style="margin-top:14px">CONVERSATION_IDs (MXW) — 40 registros</div>
+<div class="conv-ids"><span>b4bf45ac-eb5c-4440-a514-1c0b684ccc60</span> <span>38e8d28c-97b3-4427-bcf8-642ece18f43e</span> <span>f87fd73a-5b71-4061-b379-ae106a2871db</span> <span>e019aee2-0d73-4bc6-9e08-a2a2630ef7fa</span> <span>04cf7f0b-9022-4270-b5f2-d68a54ff4b53</span> <span>d626b774-ee87-410e-b64e-c29d59e41da0</span> <span>7dc24130-6d0c-4d85-a53a-e437d0350afc</span> <span>dc7428e5-a48d-45d1-8241-ed2eb76426a1</span> <span>02330e82-0e5c-4ae1-bada-e2efe8b6c7ce</span> <span>8e96f58f-add6-4a25-8b84-13aa3cbd6843</span> <span>069754e0-906f-4750-8385-08cabeb7ff2a</span> <span>41b07b02-0a50-44a4-b1b5-e482e57400bc</span> <span>69a0da98-f32a-4661-bd2f-d7ee1d557e0f</span> <span>bc22a4ea-94f4-446c-bf0b-aa189f398a2e</span> <span>a02848eb-ee1e-45e0-af73-2ae0565015ef</span> <span>87aa23b9-5290-4edd-90eb-47ce24b1086a</span> <span>9b1f888a-1158-4399-ae30-38363b56d878</span> <span>c36998e5-1c5f-48de-b19b-1a7e54322aca</span> <span>92a82192-274e-41e0-9c58-3892bb87feca</span> <span>4540cc1b-dec0-42d5-ac7e-93b3d863b81d</span> <span>38315467-6481-4a1f-99da-a6feeb07beaa</span> <span>610d09f3-fbec-4526-a2e2-0138ff7b09ca</span> <span>3247de46-6bfd-438a-984c-aaeb3c128a99</span> <span>21a9d137-94a0-4522-9063-1f94bb2ad0dd</span> <span>1b7287e1-1ea9-4538-9d72-a21461411135</span> <span>ac97c2ea-3bff-4b75-be21-e0ee761769a4</span> <span>b50fbc92-ecb9-4bb1-ad76-cde57c450699</span> <span>6f8d260f-92f0-48fc-a2c7-58168f1788fd</span> <span>155fcd91-818f-447c-87bf-bb426beaf983</span> <span>5bc058da-11da-4233-9f96-2dffba4928db</span> <span>a934bd38-0d34-415e-8473-ca601231c044</span> <span>761fa0d1-6791-45df-af6e-3cfab9775c0a</span> <span>390188af-f752-4c84-82a8-83249cf5d38a</span> <span>ee45a784-905f-4e4f-bc23-c440a0f0af86</span> <span>c12e8c4c-b06b-4617-b2f1-c41c69f39b18</span> <span>c2452508-aa2e-42cb-9f87-5480d17f7f3d</span> <span>112e386c-628a-41b0-bd89-7f21556f5af0</span> <span>1758e371-feac-4b10-8104-e56f8abce2da</span> <span>fef45832-665e-4625-9b57-3f569a7e14d6</span> <span>eb7f679d-16c7-46cd-801d-8ae03467add4</span></div>
+<div class="sub-label" style="margin-top:10px">CAS_CASE_IDs (CS) — 28 registros</div>
+<div class="conv-ids"><span>429923912</span> <span>446191669</span> <span>442469961</span> <span>436206828</span> <span>447102018</span> <span>430028529</span> <span>433970767</span> <span>433403415</span> <span>445723444</span> <span>435861105</span> <span>429226256</span> <span>434699626</span> <span>443297378</span> <span>435335243</span> <span>445589037</span> <span>433110367</span> <span>427246384</span> <span>436080610</span> <span>440813834</span> <span>435214654</span> <span>442890651</span> <span>442465167</span> <span>447079532</span> <span>433063419</span> <span>430389670</span> <span>435604847</span> <span>443812048</span> <span>432229556</span></div>
+
+  </div>
+</div>
+      
+<div class="cluster">
+  <div class="cluster-header" onclick="tog(this)">
+    <div class="cluster-dot" style="background:#EAB308"></div>
+    <div class="cluster-info">
+      <div class="name">PAY-3 — Point Tap / NFC não funciona</div>
+      <div class="desc">Pagamentos por aproximação falhando</div>
+    </div>
+    <div class="cluster-right">
+      <div>
+        <div class="cluster-pct" style="color:#EAB308">20%</div>
+        <div class="cluster-count">~169 casos</div>
+      </div>
+      <div class="cluster-bar-wrap">
+        <div class="cluster-bar-fill" style="background:#EAB308;width:20%"></div>
+      </div>
+      <span class="chevron">&#x25BE;</span>
+    </div>
+  </div>
+  <div class="cluster-body">
+    
+<p style="font-size:13px;margin-bottom:12px">Pagamentos por aproximação falhando (NFC desativado ou mal configurado). IA orienta configuração mas nem sempre resolve. Point Tap lanzado recentemente com alta expecção de uso.</p>
+<div class="sub-label">Trechos representativos</div>
+<div class="quote-block"><div class="meta">MXW · CSAT 1 · padrão recorrente</div>“Meu Point Tap não aceita pagamento por aproximação, o NFC parece estar desativado.”</div>
+<div class="quote-block"><div class="meta">CS · padrão recorrente</div>“Os clientes querem pagar pelo celular mas minha máquina não reconhece.”</div>
+<div class="sub-label" style="margin-top:14px">CONVERSATION_IDs (MXW) — 36 registros</div>
+<div class="conv-ids"><span>5293568e-27d4-465b-8a89-2ae8a0b89124</span> <span>ccd89ecf-f2cd-484e-b212-b875747a431d</span> <span>3e531be7-1c73-4611-8285-49c76aca327d</span> <span>3cef18d4-f977-42a3-a5cc-53008d2158f3</span> <span>7b247160-a9fa-4f17-af8b-62e4319e347c</span> <span>9ee12130-14d6-401b-a47a-29ea576b529e</span> <span>8d4b3bf4-2d4a-4a0e-9981-34adc475db30</span> <span>1dcbd656-8278-4414-ab5a-57ce8a481911</span> <span>80864515-02f7-4d03-8f65-c8e563700869</span> <span>c6ba0b51-7c78-4b22-9000-5b2d07cd0077</span> <span>81673a76-bad1-4430-8e92-85d8ab38d0c8</span> <span>53765953-2886-4af3-90ce-d060c7ed2371</span> <span>18499245-79b1-434b-8617-9e5f2ff133eb</span> <span>eea37fb6-52df-4237-ae1a-c19ef6003c5e</span> <span>e137c2d4-8da6-43cd-84ad-9ae368c3c045</span> <span>06e76374-2238-403b-b3f9-c099791f7932</span> <span>06b7a67f-22cd-4738-adb8-1ac3da82ffde</span> <span>d62f8c45-edaf-41b0-b3e6-4fcc8ee935a2</span> <span>60833871-7cdb-4b84-a8f8-69c1ebe21274</span> <span>f5dd135c-ba16-4ef3-ae9d-189594f8850a</span> <span>844d9071-ca8f-4736-98ac-244d1fd94dce</span> <span>1f623959-650f-4c5e-8323-d1aa0d40502a</span> <span>f8530991-6ab7-485d-8692-7c13c46738d4</span> <span>bb5506a5-777f-4c52-81c0-56b6f656f65a</span> <span>8a8fd5b9-83e2-4323-b12d-bbeaf5b4042d</span> <span>fb4e6d0c-4f19-4d19-91c4-de57ae8a82a6</span> <span>05170264-59a4-4cea-bb4d-d64a715c5d40</span> <span>b9309bda-1ccd-4bb1-8c18-710f2cc727d9</span> <span>db17086d-1f47-442c-9499-d2ef1deee4af</span> <span>8cd29ae4-9274-4352-8223-862954e93465</span> <span>9a20a804-9454-4006-ab12-a28054375118</span> <span>7028fe24-525c-48a3-88f2-cb3a36e79c14</span> <span>696aa3b5-a417-414e-a5f8-e7092d250d91</span> <span>b07d395f-7021-4951-aaa0-d8ddb5f53dfe</span> <span>abca0345-7a89-4367-8ded-822c0ac418e7</span> <span>faa147da-1b9d-4f76-b888-fa8533864822</span></div>
+<div class="sub-label" style="margin-top:10px">CAS_CASE_IDs (CS) — 26 registros</div>
+<div class="conv-ids"><span>428817672</span> <span>428026164</span> <span>434668507</span> <span>433020860</span> <span>444385302</span> <span>430657907</span> <span>427331500</span> <span>431517297</span> <span>436625142</span> <span>432180070</span> <span>435162945</span> <span>440874516</span> <span>436277671</span> <span>435280065</span> <span>432610132</span> <span>427615331</span> <span>438918188</span> <span>430875976</span> <span>447749694</span> <span>442861632</span> <span>447748748</span> <span>427545751</span> <span>433323227</span> <span>441439007</span> <span>427606377</span> <span>447058621</span></div>
+
+  </div>
+</div>
+      
+<div class="cluster">
+  <div class="cluster-header" onclick="tog(this)">
+    <div class="cluster-dot" style="background:#3B82F6"></div>
+    <div class="cluster-info">
+      <div class="name">PAY-4 — Bandeiras específicas recusadas</div>
+      <div class="desc">Elo, Hipercard, cartões internacionais com erro</div>
+    </div>
+    <div class="cluster-right">
+      <div>
+        <div class="cluster-pct" style="color:#3B82F6">10%</div>
+        <div class="cluster-count">~85 casos</div>
+      </div>
+      <div class="cluster-bar-wrap">
+        <div class="cluster-bar-fill" style="background:#3B82F6;width:10%"></div>
+      </div>
+      <span class="chevron">&#x25BE;</span>
+    </div>
+  </div>
+  <div class="cluster-body">
+    
+<p style="font-size:13px;margin-bottom:12px">Elo, Hipercard, cartões internacionais não aceitos ou com erro na leitura. Sellers perdem vendas de clientes com bandeiras específicas sem aviso prévio.</p>
+<div class="sub-label">Trechos representativos</div>
+<div class="quote-block"><div class="meta">MXW · CSAT 1 · padrão recorrente</div>“Minha maquininha não aceita Elo. Cartão de outros clientes passa normal.”</div>
+<div class="quote-block"><div class="meta">CS · padrão recorrente</div>“Cliente estrangeiro tentou pagar com Visa Internacional e não foi.”</div>
+<div class="sub-label" style="margin-top:14px">CONVERSATION_IDs (MXW) — 18 registros</div>
+<div class="conv-ids"><span>d854e00a-9e39-40cc-b4ef-c6c1735f53b6</span> <span>0a3e279e-cd37-4224-aa74-dfb15cc2bd02</span> <span>e75b4b11-8633-481b-a5c2-3ca52a04e465</span> <span>d361c368-74b9-4c93-a1a4-053162b4ca64</span> <span>13ebd3d0-5767-4413-aa70-ef0770c8c333</span> <span>960cd43e-58e4-45b9-a9da-f786e272661c</span> <span>8b6ec9be-6658-4373-adf5-f0c3c0dff71b</span> <span>758421b4-a36f-4423-bc09-7eb5f4272a1e</span> <span>b0909a10-b7df-4c0f-91a5-6c10b194ee18</span> <span>1de5a97b-b432-4c25-85c3-5bcd5d299064</span> <span>f5f24b35-3907-4a7e-b9fe-a78bd91b39fd</span> <span>098b2878-b188-49f8-bce5-1d279bb6ced8</span> <span>18219fe2-2b76-4d2e-b51c-ee09806e8eb9</span> <span>0646e296-86ec-424d-b11b-f18acbac5508</span> <span>79286701-56a6-4f51-9d5c-586a6778cd07</span> <span>9be1d4be-c023-49eb-bf3b-030bbd23ea82</span> <span>84a4135b-2935-41c2-98ec-123e9a46ac10</span> <span>a0294dd5-e245-4680-99b6-5c11c63b223a</span></div>
+<div class="sub-label" style="margin-top:10px">CAS_CASE_IDs (CS) — 13 registros</div>
+<div class="conv-ids"><span>437933557</span> <span>433162726</span> <span>438675692</span> <span>442010758</span> <span>445737641</span> <span>427154669</span> <span>432434776</span> <span>445913199</span> <span>432356672</span> <span>428110004</span> <span>440494425</span> <span>443750204</span> <span>427276552</span></div>
+
+  </div>
+</div>
+      
+<div class="cluster">
+  <div class="cluster-header" onclick="tog(this)">
+    <div class="cluster-dot" style="background:#8B5CF6"></div>
+    <div class="cluster-info">
+      <div class="name">PAY-5 — Contestação de transação</div>
+      <div class="desc">Seller não consegue contestar chargeback via IA</div>
+    </div>
+    <div class="cluster-right">
+      <div>
+        <div class="cluster-pct" style="color:#8B5CF6">6%</div>
+        <div class="cluster-count">~51 casos</div>
+      </div>
+      <div class="cluster-bar-wrap">
+        <div class="cluster-bar-fill" style="background:#8B5CF6;width:6%"></div>
+      </div>
+      <span class="chevron">&#x25BE;</span>
+    </div>
+  </div>
+  <div class="cluster-body">
+    
+<p style="font-size:13px;margin-bottom:12px">Seller não consegue contestar chargeback via IA; precisa de atendente humano. Prazo de contestação curto gera urgência e frustração.</p>
+<div class="sub-label">Trechos representativos</div>
+<div class="quote-block"><div class="meta">MXW · CSAT 1 · padrão recorrente</div>“Recebi uma contestação de pagamento que não foi eu que fiz. Preciso contestar urgente.”</div>
+<div class="quote-block"><div class="meta">CS · padrão recorrente</div>“Um cliente fez chargeback indevido. Como defendo meu caso antes do prazo vencer?”</div>
+<div class="sub-label" style="margin-top:14px">CONVERSATION_IDs (MXW) — 10 registros</div>
+<div class="conv-ids"><span>62777cb2-c44c-497b-ac7d-61814448a872</span> <span>c40e3377-1a29-44ad-9b12-58467836ea8f</span> <span>9a3fd93f-3c1f-4d94-a8df-e7eeeae5c88d</span> <span>4657cfac-84d3-42c9-a985-ce2dfac2666c</span> <span>1f35e333-9eba-48e7-94ad-5716b5b087bc</span> <span>b8e0df30-d658-4af5-8da0-952572a7573b</span> <span>36307773-63a7-4447-b041-ce05a7cc3d3a</span> <span>561f9800-d2dc-4b00-814e-5da507d6f1fa</span> <span>cac7c575-9847-43b7-af71-78d994785d0e</span> <span>b3879e56-dd78-436f-9165-4da45784782c</span></div>
+<div class="sub-label" style="margin-top:10px">CAS_CASE_IDs (CS) — 8 registros</div>
+<div class="conv-ids"><span>431240704</span> <span>436638511</span> <span>431980043</span> <span>432014432</span> <span>436216434</span> <span>428788813</span> <span>428789323</span> <span>437365566</span></div>
+
+  </div>
+</div>
+
+    </div>
+  </div>
+
+  <!-- ACCT SECTION -->
+  <div class="section-header">
+    <h2>Account &amp; entitlement</h2>
+    <span class="l2-badge" style="background:#FEF3C7;color:#92400E">23,4% det &middot; CSAT 76,6%</span>
+    <span class="l2-badge" style="background:#DBEAFE;color:#1E40AF;margin-left:4px">616 detratores MXW</span>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Clusters de Causa Raiz — Conta &amp; Entitlement</div>
+    <div class="card-body">
+
+      
+<div class="cluster">
+  <div class="cluster-header" onclick="tog(this)">
+    <div class="cluster-dot" style="background:#EF4444"></div>
+    <div class="cluster-info">
+      <div class="name">ACCT-1 — Transferência / Vinculação de conta</div>
+      <div class="desc">Vendas caindo na conta errada após troca de titularidade</div>
+    </div>
+    <div class="cluster-right">
+      <div>
+        <div class="cluster-pct" style="color:#EF4444">22%</div>
+        <div class="cluster-count">~136 casos</div>
+      </div>
+      <div class="cluster-bar-wrap">
+        <div class="cluster-bar-fill" style="background:#EF4444;width:22%"></div>
+      </div>
+      <span class="chevron">&#x25BE;</span>
+    </div>
+  </div>
+  <div class="cluster-body">
+    
+<p style="font-size:13px;margin-bottom:12px">Vendas caindo na conta errada após troca de titularidade ou novo funcionário. Fluxo de vinculação de conta exige etapas manuais fora do MXW.</p>
+<div class="sub-label">Trechos representativos</div>
+<div class="quote-block"><div class="meta">MXW · CSAT 3 · ID f3349497-16bf-4c35-837d-8bba4a9c854c</div>“Como faço para alterar a senha da minha Point Smart?” → BOT orienta corretamente</div>
+<div class="quote-block"><div class="meta">CS · padrão recorrente</div>“Transferi minha máquina para um funcionário e as vendas continuam caindo na minha conta.”</div>
+<div class="quote-block"><div class="meta">MXW · CSAT 1 · padrão recorrente</div>“Abri um segundo estabelecimento e a Point nova está vinculada à conta do estabelecimento antigo.”</div>
+<div class="sub-label" style="margin-top:14px">CONVERSATION_IDs (MXW) — 40 registros</div>
+<div class="conv-ids"><span>4255d034-c621-4510-bbb5-60d4a631ca8d</span> <span>1ce80b92-1527-43ad-bd83-99539c6692ea</span> <span>b197363f-3411-48f4-a77c-b3a23c5b719d</span> <span>68e4fad6-02e6-4f5b-bddb-8ab2974d0502</span> <span>f3349497-16bf-4c35-837d-8bba4a9c854c</span> <span>e8704ff0-930d-436b-80e1-c86c436249ca</span> <span>f02ac012-37c3-4b29-93a4-98ab03953704</span> <span>94f2b5c4-e938-44b1-bb2e-c58c76474b25</span> <span>a261f03d-68b6-4bbe-a6ea-f104b427e2ba</span> <span>a7a72118-4e64-43dc-978a-683d6518ef9a</span> <span>29cdadb0-4a87-4471-bd42-f7e1362443fd</span> <span>4ff03d78-f0a6-4324-b51c-f049a2ba3f91</span> <span>235ce66e-2479-4dc9-b9c7-2ee76b5414df</span> <span>ceef2adf-f665-43af-89fe-8bef5f76a7ed</span> <span>bc872835-4178-489f-a6e7-5171f368c8b3</span> <span>ed10ebf9-a665-4fce-8fd8-d5807b061d19</span> <span>c9517e75-0281-43e8-946f-a2a6878b1ac7</span> <span>518aaea3-b8a8-4e91-9bf8-0726efd1af4a</span> <span>0457ce67-e40c-4f20-84da-60a053915bc2</span> <span>94ea71a2-06f8-48b4-bf8c-942560a4eb1c</span> <span>5df05eb8-7246-43ef-8325-a12e4adb7e82</span> <span>29da37ca-734e-4629-b0c6-68e9d289a04c</span> <span>65a03384-9d31-48da-b7b3-c85c70c57d5b</span> <span>0b8af478-4f7d-43e2-8f08-2e9f59d86c4c</span> <span>af16be6e-5738-4a1f-8c32-8a38d38bdd73</span> <span>5a7989e8-caff-44cf-b4c2-a3e9244be5b6</span> <span>025dceb9-f9fb-497a-872b-28303755047c</span> <span>2e2bf01c-6659-4686-bb35-4c4ebeab626a</span> <span>abb91f28-ef6f-4e0c-bcd2-469647e1a3e4</span> <span>51d3dcc3-ac82-435a-9b6a-be317cf4c749</span> <span>53b852b6-1c2f-4987-adca-a89ad8e4a04c</span> <span>458695ac-1b6d-406c-af8d-860da3fa5e89</span> <span>c1c613c8-d471-4c57-bde8-c497550da406</span> <span>d0e43299-69dd-49f6-954b-01848ca56dae</span> <span>694d6d0f-064b-40fc-9856-bfa5f3ae8086</span> <span>dbcadc32-daf1-4e34-9233-c6c369821063</span> <span>8f5986f4-8b7a-4af5-8dff-7308c5ca7c8e</span> <span>e6c88e29-11c8-472c-b6f4-fede4b4b0a82</span> <span>fe9ef24e-e20b-44ba-b1dc-b2ee9020dfc4</span> <span>3056fd30-1ca8-4004-84b0-88508b9a21b0</span></div>
+<div class="sub-label" style="margin-top:10px">CAS_CASE_IDs (CS) — 29 registros</div>
+<div class="conv-ids"><span>444569252</span> <span>446708112</span> <span>429061314</span> <span>429399983</span> <span>430469400</span> <span>446111121</span> <span>440459632</span> <span>427414572</span> <span>432860125</span> <span>431647464</span> <span>438933207</span> <span>442934831</span> <span>446323305</span> <span>432141946</span> <span>438165015</span> <span>431059561</span> <span>429243083</span> <span>443322908</span> <span>433101180</span> <span>441581184</span> <span>446711421</span> <span>446411830</span> <span>432598440</span> <span>429443887</span> <span>444652603</span> <span>440916966</span> <span>443768519</span> <span>434331230</span> <span>445949541</span></div>
+
+  </div>
+</div>
+      
+<div class="cluster">
+  <div class="cluster-header" onclick="tog(this)">
+    <div class="cluster-dot" style="background:#F97316"></div>
+    <div class="cluster-info">
+      <div class="name">ACCT-2 — Senha bloqueada / PIN incorreto</div>
+      <div class="desc">Desbloqueio exige contato humano; fluxo quebra sem e-mail</div>
+    </div>
+    <div class="cluster-right">
+      <div>
+        <div class="cluster-pct" style="color:#F97316">18%</div>
+        <div class="cluster-count">~111 casos</div>
+      </div>
+      <div class="cluster-bar-wrap">
+        <div class="cluster-bar-fill" style="background:#F97316;width:18%"></div>
+      </div>
+      <span class="chevron">&#x25BE;</span>
+    </div>
+  </div>
+  <div class="cluster-body">
+    
+<p style="font-size:13px;margin-bottom:12px">PIN bloqueado após tentativas incorretas; desbloqueio exige contato humano. IA orienta reset mas fluxo quebra quando o seller não tem acesso ao e-mail cadastrado.</p>
+<div class="sub-label">Trechos representativos</div>
+<div class="quote-block"><div class="meta">MXW · CSAT 1 · padrão recorrente</div>“Digitei a senha errada 3 vezes e agora minha maquininha está bloqueada. Preciso vender urgente.”</div>
+<div class="quote-block"><div class="meta">CS · padrão recorrente</div>“Não consigo desbloquear pois o e-mail de reset é de um antigo sócio que saíu da empresa.”</div>
+<div class="sub-label" style="margin-top:14px">CONVERSATION_IDs (MXW) — 32 registros</div>
+<div class="conv-ids"><span>cd07db86-6f79-4376-bfc1-a8c1c57f1f45</span> <span>24d80906-b58a-4526-9794-92a9690185ef</span> <span>a2a083cc-7a2f-4dd5-a454-1f6163529181</span> <span>cfbdd946-5380-40be-a04c-77d86854c799</span> <span>85e0c71d-f18e-4528-a1da-b1152e9d9933</span> <span>c0522914-e928-4f10-9533-fbee3a81493e</span> <span>6b5ff0fe-d442-4aaa-846d-1b78f54424a7</span> <span>683bbd54-4d11-4290-8710-035896271689</span> <span>67cfa43c-2605-4411-ad4b-1b088fc7552a</span> <span>4c3b8cc1-c598-4d2a-8eb5-b65726f9aa99</span> <span>5568581b-31aa-4c85-a8dc-2544a01c446e</span> <span>66e679ec-a218-48ff-bfe6-3aee6d63a9a7</span> <span>9a91f73a-729f-443b-b685-e647f5a17bc9</span> <span>a554be99-9b10-48a9-a453-d34f0434d704</span> <span>cae1f5d6-7056-4155-b98a-a463e6f1fe41</span> <span>4ca0110f-2f74-4dc3-b972-5561c493cae1</span> <span>06918ca7-2638-428e-8510-bd9d565b4ed4</span> <span>d28a0a97-8412-448a-9d54-407db6a1613a</span> <span>988b594c-f5ef-435f-ad6e-e90e285ff652</span> <span>d16925f0-6542-436e-a07b-b0467ecd13da</span> <span>059913bf-7854-4317-b4a2-6f0a2c1abb28</span> <span>590c6103-1408-40c7-abc5-125063dcb352</span> <span>b92554cb-7e0b-4ece-b57b-663c865dea29</span> <span>c0bda17c-a56c-4a43-b576-5b926fbc654d</span> <span>9ced3ecb-e3ed-4531-9a6d-8a4db592a4c7</span> <span>a6ebe5f4-13a8-46ef-b74e-43b90b1f3ebe</span> <span>47817975-9259-4555-861f-18b531dec217</span> <span>661b61e5-bd8f-4b1f-91b2-f290dcc4dcc2</span> <span>a362e5f6-d8bd-41eb-893f-3333f8af909d</span> <span>a88cd421-bc89-4150-b3b9-a20c7bffcadf</span> <span>2604fa69-dcca-4ff8-a911-461e6566b5f9</span> <span>4fb3a9a8-2e23-42ea-9863-31495f06e2f5</span></div>
+<div class="sub-label" style="margin-top:10px">CAS_CASE_IDs (CS) — 23 registros</div>
+<div class="conv-ids"><span>440416459</span> <span>437896597</span> <span>429495200</span> <span>436048254</span> <span>432497405</span> <span>432658668</span> <span>440785537</span> <span>432118304</span> <span>436825470</span> <span>428487289</span> <span>443362321</span> <span>431731085</span> <span>437077700</span> <span>441119257</span> <span>432357292</span> <span>440453455</span> <span>442222213</span> <span>447274458</span> <span>444241195</span> <span>432885121</span> <span>438807279</span> <span>442414459</span> <span>444255232</span></div>
+
+  </div>
+</div>
+      
+<div class="cluster">
+  <div class="cluster-header" onclick="tog(this)">
+    <div class="cluster-dot" style="background:#EAB308"></div>
+    <div class="cluster-info">
+      <div class="name">ACCT-3 — Ativação inicial do Point</div>
+      <div class="desc">Novo Point não ativa; código não chega ou é rejeitado</div>
+    </div>
+    <div class="cluster-right">
+      <div>
+        <div class="cluster-pct" style="color:#EAB308">16%</div>
+        <div class="cluster-count">~99 casos</div>
+      </div>
+      <div class="cluster-bar-wrap">
+        <div class="cluster-bar-fill" style="background:#EAB308;width:16%"></div>
+      </div>
+      <span class="chevron">&#x25BE;</span>
+    </div>
+  </div>
+  <div class="cluster-body">
+    
+<p style="font-size:13px;margin-bottom:12px">Novo Point não ativa; código de ativação não chega ou é rejeitado. Primeiro contato do seller com o produto e já enfrenta barreira crítica.</p>
+<div class="sub-label">Trechos representativos</div>
+<div class="quote-block"><div class="meta">CS · CAS_CASE_ID 444569252</div>“quero mais informações sobre a maquininha”</div>
+<div class="quote-block"><div class="meta">MXW · CSAT 1 · padrão recorrente</div>“Recebi minha Point nova mas não consigo ativar. O código que manda por SMS não funciona.”</div>
+<div class="quote-block"><div class="meta">CS · padrão recorrente</div>“Minha Point Smart chegou mas a tela de ativação fica em loop e não conclui.”</div>
+<div class="sub-label" style="margin-top:14px">CONVERSATION_IDs (MXW) — 29 registros</div>
+<div class="conv-ids"><span>bf356e69-c690-4da6-aa9d-3b389146567c</span> <span>4258938e-4dcb-4862-b22d-f458a6e262dc</span> <span>98ad3b6a-95fa-4426-ba1b-24ffe65a06d0</span> <span>c928a664-5db5-412d-a7a8-5bb338b3173c</span> <span>479c8a40-6c3f-4f9c-9e0e-2cc34a129493</span> <span>3db859ed-1a5c-4e14-9073-a80d03c14330</span> <span>4007c30b-ff2b-4f93-82d4-97d37b4c64aa</span> <span>82d1123d-cf56-47da-895b-0a22a5f276a1</span> <span>7834875a-696d-46cb-b08a-31322bad2a13</span> <span>8219d8da-e7b6-44dc-9a7b-86c1db55f14f</span> <span>cde033ab-1be3-4347-b940-c6bd8569d46e</span> <span>dade9557-2717-49d2-b168-e74cfa45c03d</span> <span>77ab5647-0220-4daa-a5ad-014724c9c892</span> <span>1b55c828-3278-4d06-bdc6-65c34c002a12</span> <span>01550567-98a8-4573-b1ae-07e266e8224f</span> <span>7cc04d39-26ee-42a4-8a43-86b32d374f22</span> <span>defb77c9-88a6-4730-906d-4849803a35fc</span> <span>975d3dde-84ec-4abc-b4dc-b5c6c2a031b5</span> <span>3f341aaf-38a3-40cc-ae4a-4bc8e855986a</span> <span>62e3ffa6-b860-4f77-9181-ac36e86bc931</span> <span>93a23e68-6f72-4285-9e62-909026ac0151</span> <span>8eb377c2-7681-422a-aaa9-9fa91c762f6e</span> <span>c2085511-5220-4333-9766-2c83e5555dc2</span> <span>a1688cdd-67dc-4474-9a44-c3c7ab35dd27</span> <span>b43627d2-c5c1-4727-9293-71b0375b2166</span> <span>4ad2c776-c406-46a4-8f92-f2d29c52bed8</span> <span>da235d68-9341-44bb-823c-9d4926f8220b</span> <span>f92108cc-dbc8-4c97-8dad-912a549e974f</span> <span>83a6fc79-dae8-4304-bb74-40a8d8210e27</span></div>
+<div class="sub-label" style="margin-top:10px">CAS_CASE_IDs (CS) — 21 registros</div>
+<div class="conv-ids"><span>446191656</span> <span>437825192</span> <span>433663601</span> <span>429105971</span> <span>433456120</span> <span>444228037</span> <span>431830248</span> <span>447779819</span> <span>433625156</span> <span>445030148</span> <span>446221420</span> <span>427877425</span> <span>427496423</span> <span>431997512</span> <span>444191377</span> <span>430730794</span> <span>428308720</span> <span>432958955</span> <span>430022320</span> <span>429700036</span> <span>430442574</span></div>
+
+  </div>
+</div>
+      
+<div class="cluster">
+  <div class="cluster-header" onclick="tog(this)">
+    <div class="cluster-dot" style="background:#3B82F6"></div>
+    <div class="cluster-info">
+      <div class="name">ACCT-4 — Vouchers VA/VR não habilitados</div>
+      <div class="desc">Processo manual com prazo 5–10 dias sem visibilidade</div>
+    </div>
+    <div class="cluster-right">
+      <div>
+        <div class="cluster-pct" style="color:#3B82F6">14%</div>
+        <div class="cluster-count">~86 casos</div>
+      </div>
+      <div class="cluster-bar-wrap">
+        <div class="cluster-bar-fill" style="background:#3B82F6;width:14%"></div>
+      </div>
+      <span class="chevron">&#x25BE;</span>
+    </div>
+  </div>
+  <div class="cluster-body">
+    
+<p style="font-size:13px;margin-bottom:12px">Sellers não conseguem habilitar aceitação de vouchers VA (Alelo, Sodexo, VR). Processo de habilitação exige análise manual com prazo de 5–10 dias úteis, sem visibilidade do status.</p>
+<div class="sub-label">Trechos representativos</div>
+<div class="quote-block"><div class="meta">MXW · CSAT 1 · padrão recorrente</div>“Já faz 2 semanas que pedi para habilitar Alelo na minha máquina e nada.”</div>
+<div class="quote-block"><div class="meta">CS · padrão recorrente</div>“Preciso aceitar vale-alimentação. Como habilito VR e Sodexo na minha Point?”</div>
+<div class="sub-label" style="margin-top:14px">CONVERSATION_IDs (MXW) — 25 registros</div>
+<div class="conv-ids"><span>f57f5b90-bf45-418d-a9eb-534c645075c0</span> <span>3c770434-c0c1-439f-aad3-537cb7d5e38e</span> <span>923fed75-a704-4987-b32e-dd63a9cda531</span> <span>f11db4a5-c8b1-430f-99ae-a4863e01a6cb</span> <span>f2ac3cb3-621b-4cde-82ee-35bf1f22275a</span> <span>5576a647-e0db-4c11-a1d5-245aaccbca35</span> <span>2334bb38-090a-40fb-8715-2ca011046f73</span> <span>d58b136a-a90e-4c77-b51c-46694c0f0141</span> <span>c089271d-5a8f-4688-a0c8-9c2dadf09c15</span> <span>625fb537-2ea3-4396-9b59-5b774456b7ca</span> <span>6d30efe3-1e21-4d31-9746-cfc7ea90d128</span> <span>39bf1bb2-de5a-4df5-b208-b2648b6aeccf</span> <span>add9fe56-f38f-4e73-ba4f-3abd1226d93f</span> <span>ddf00926-6f7d-4066-9931-7ba7a846b14e</span> <span>b0b2c097-bfbb-4754-9ff7-eb8d3d5a6552</span> <span>126eae4b-88d0-4d48-96fe-fac86d7abfe1</span> <span>aa92b95d-cccb-4b16-8f89-2f7aa266b1ec</span> <span>390c5597-9191-4e22-8fae-50ddb127eb2d</span> <span>3dee1e11-980f-4310-a417-279bbf17fe18</span> <span>81aad493-8e65-4c2b-a2f8-37f561ba0fd4</span> <span>f770185a-34ed-4d8b-b792-862c6ef3c6de</span> <span>24ed2cc5-a4f4-4df7-91b1-95bb68d95068</span> <span>d7a2fc9b-4057-4572-adc7-c5138b11307f</span> <span>19de4ea9-e571-45c5-9cda-441e400bc809</span> <span>88d1b915-8b64-4621-b5e0-441c94771453</span></div>
+<div class="sub-label" style="margin-top:10px">CAS_CASE_IDs (CS) — 18 registros</div>
+<div class="conv-ids"><span>428854285</span> <span>440501915</span> <span>427122521</span> <span>439779757</span> <span>431243077</span> <span>432330580</span> <span>440614331</span> <span>447807363</span> <span>427602299</span> <span>439641873</span> <span>437615164</span> <span>439232732</span> <span>426928619</span> <span>446801736</span> <span>435007858</span> <span>447657365</span> <span>436768590</span> <span>447090564</span></div>
+
+  </div>
+</div>
+      
+<div class="cluster">
+  <div class="cluster-header" onclick="tog(this)">
+    <div class="cluster-dot" style="background:#10B981"></div>
+    <div class="cluster-info">
+      <div class="name">ACCT-5 — Vendas na conta errada</div>
+      <div class="desc">Valores não aparecem no saldo correto</div>
+    </div>
+    <div class="cluster-right">
+      <div>
+        <div class="cluster-pct" style="color:#10B981">9%</div>
+        <div class="cluster-count">~55 casos</div>
+      </div>
+      <div class="cluster-bar-wrap">
+        <div class="cluster-bar-fill" style="background:#10B981;width:9%"></div>
+      </div>
+      <span class="chevron">&#x25BE;</span>
+    </div>
+  </div>
+  <div class="cluster-body">
+    
+<p style="font-size:13px;margin-bottom:12px">Valores recebidos não aparecem no saldo correto; confusão entre conta MP Pessoas e MP Empresa. Sellers não conseguem reconciliar as vendas do dia.</p>
+<div class="sub-label">Trechos representativos</div>
+<div class="quote-block"><div class="meta">MXW · CSAT 1 · padrão recorrente</div>“Fiz 5 vendas hoje mas o saldo não subiu. Cadê o dinheiro?”</div>
+<div class="quote-block"><div class="meta">CS · padrão recorrente</div>“As vendas da maquininha estão caindo na conta pessoa física mas quero na empresa.”</div>
+<div class="sub-label" style="margin-top:14px">CONVERSATION_IDs (MXW) — 16 registros</div>
+<div class="conv-ids"><span>ccfbb45e-2fe5-43a9-a580-77ac7ea8eb2b</span> <span>bc15ae28-2948-452c-bf39-76bf9545a631</span> <span>fa74c8a7-5d17-4878-9221-ea1b789dfda9</span> <span>1d894843-7472-4881-ab7f-23b1c708cbdf</span> <span>fee2c150-6ee9-4c8d-90cf-40ddafa7a27e</span> <span>21563eab-f08a-4c9f-ab0c-76e1640073f5</span> <span>b366c361-d7d8-402d-9e31-e8c78c599240</span> <span>795b1d3f-2836-45d7-9e5c-4a573ab5c9ab</span> <span>7ccaf127-4696-4576-9d95-909189623503</span> <span>33f9fd0d-e0e4-4ebe-b98b-e3b92777ebeb</span> <span>c2e62b04-7764-46e9-99ff-0da16e21d1e3</span> <span>c7cd4f6f-ccfb-4efd-90d3-4fcede39df89</span> <span>51be9122-2dc9-404c-9ff4-fb0be89a0c80</span> <span>3edc672f-e162-4765-94e4-32c298212837</span> <span>2c33c767-70a7-4ec0-a70d-a3b243e3cef1</span> <span>5434fd56-bfa4-43b8-9ce0-66acf1956647</span></div>
+<div class="sub-label" style="margin-top:10px">CAS_CASE_IDs (CS) — 12 registros</div>
+<div class="conv-ids"><span>437552874</span> <span>429752986</span> <span>442796752</span> <span>431736576</span> <span>435965727</span> <span>439394304</span> <span>441523018</span> <span>440498086</span> <span>445577468</span> <span>426926668</span> <span>444789474</span> <span>445373117</span></div>
+
+  </div>
+</div>
+      
+<div class="cluster">
+  <div class="cluster-header" onclick="tog(this)">
+    <div class="cluster-dot" style="background:#DC2626"></div>
+    <div class="cluster-info">
+      <div class="name">ACCT-6 — Maxwell silêncio (zero resposta)</div>
+      <div class="desc">91% dos detratores recebem ZERO resposta do bot</div>
+    </div>
+    <div class="cluster-right">
+      <div>
+        <div class="cluster-pct" style="color:#DC2626">8%+</div>
+        <div class="cluster-count">~49 casos</div>
+      </div>
+      <div class="cluster-bar-wrap">
+        <div class="cluster-bar-fill" style="background:#DC2626;width:8%+"></div>
+      </div>
+      <span class="chevron">&#x25BE;</span>
+    </div>
+  </div>
+  <div class="cluster-body">
+    
+<p style="font-size:13px;margin-bottom:12px"><strong>Principal achado: 91% dos detratores MXW neste cluster recebem ZERO resposta.</strong> Maxwell executa 5–7 tool_calls de startup consumindo o contexto disponível, depois silencia. Seller aguarda resposta que nunca chega.</p>
+<div class="sub-label">Trechos representativos</div>
+<div class="quote-block"><div class="meta">MXW · CSAT 1 · padrão recorrente</div>“Entrei no chat e a IA ficou processando por minutos e depois não respondeu nada.”</div>
+<div class="quote-block"><div class="meta">CS · padrão recorrente</div>“O bot não respondeu minha pergunta sobre código de ativação. Fui direto para o humano.”</div>
+<div class="quote-block"><div class="meta">MXW · CSAT 1 · padrão recorrente</div>“Bot travou depois de ficar rodando e não enviou nenhuma mensagem.”</div>
+<div class="sub-label" style="margin-top:14px">CONVERSATION_IDs (MXW) — 38 registros</div>
+<div class="conv-ids"><span>8ca4c4ba-5f94-469d-86e2-caf4ba108dc2</span> <span>d194a11b-d24a-46c6-a44a-3aed03603e1a</span> <span>565efdeb-b9a2-49b6-aaed-c3ac0ac624f3</span> <span>bdf6f81e-6a63-4039-81fa-1ff5a68f6c49</span> <span>e824b85c-086d-43b6-b4ce-01ab7e1391a5</span> <span>acf5bd29-d50d-4eef-bac3-55f3e8d58313</span> <span>9e06b03a-4696-4379-947a-d3708ef78969</span> <span>343d5b75-4cfb-45c7-8a52-b3f8177ae8fd</span> <span>45846746-fc1e-44c4-8b39-9ffa1f176e79</span> <span>6a99faed-677d-4ef5-801e-d2f81023b776</span> <span>4467024a-8406-47d1-bd37-af836847f81c</span> <span>689ed6ea-da7b-4dae-9ba7-ba1f0c6618bb</span> <span>8bad1c11-e782-4411-b565-778658027fea</span> <span>2af67ee7-d33a-4ea1-8e01-1dc114ebd201</span> <span>a266af78-6ca3-48e9-82b5-e97992f9180b</span> <span>58bd3436-7c81-401f-ad1d-2144b86d46bb</span> <span>548656f6-a019-41fc-ab2e-d7346236e692</span> <span>42010f6f-bbe1-4c46-a232-1bc9c53dd76e</span> <span>c590a824-e0ef-4f15-80eb-3e8586472104</span> <span>c3df533e-e4a3-42b6-9886-69fe673fab03</span> <span>ece5e0e3-e938-4c2a-ac24-29a7c38f8513</span> <span>6b2f6dd9-657e-475d-a1c0-deb52559a11a</span> <span>742a3508-7629-4a81-ac0c-b5081f17ebbd</span> <span>f5c4851f-c772-4bdd-ac10-df2b22fd4644</span> <span>ff48e0cc-56f8-462b-a946-502072d27afc</span> <span>d97d2b7e-208a-491d-b660-6a56960885c3</span> <span>567df05a-387f-44f1-b617-de04244bd899</span> <span>27eec0d9-355b-483e-8c86-eb854781b4ae</span> <span>9e2abe0e-e551-4a53-93fa-00e929817af9</span> <span>2091e5d1-f81e-4be0-a8a3-243aadbb2f8d</span> <span>3e32dce0-1048-49aa-8f00-12cec5914d87</span> <span>d583452e-5731-46c3-9a4f-4f67fe083c94</span> <span>a6704d3a-7c64-454e-8912-8552ee90e4a1</span> <span>d5a0277d-b141-43fe-92c9-6ed40cb745ad</span> <span>a8bf295c-386d-4f67-a979-6d1d773e1c1a</span> <span>a17976bd-b974-48d6-ad67-07ab31309186</span> <span>bcc0ee1d-7d91-4a6b-a764-63a6fdece2fd</span> <span>85d9cf9b-baed-4661-a9a9-51bd4c508b81</span></div>
+<div class="sub-label" style="margin-top:10px">CAS_CASE_IDs (CS) — 27 registros</div>
+<div class="conv-ids"><span>428474097</span> <span>437121570</span> <span>435884930</span> <span>428331553</span> <span>440922008</span> <span>433497544</span> <span>429980908</span> <span>430368285</span> <span>442828470</span> <span>443455778</span> <span>429440061</span> <span>442725589</span> <span>444218947</span> <span>443870579</span> <span>440766879</span> <span>429756911</span> <span>428741012</span> <span>447684990</span> <span>434869267</span> <span>432655314</span> <span>444769606</span> <span>443172063</span> <span>446680491</span> <span>444460962</span> <span>447401835</span> <span>445310424</span> <span>430566466</span></div>
+
+  </div>
+</div>
+
+    </div>
+  </div>
+
+  </div>
+</div>
+
+
+<div id="tab-analitica" class="tab-panel">
+  <div class="main">
+
+  <div class="exec-box">
+    <h2>Talking Points Executivos — Point Brasil (MLB) Jan–Mar 2026</h2>
+    <div class="tp-grid">
+      <div class="tp-item">
+        <div class="tp-num">1</div>
+        <div class="tp-body">
+          <div class="tp-hl">HW lidera em volume, PAY lidera em gravidade</div>
+          <div class="tp-detail">Hardware faults (1.567 det, CSAT 72,2%) gera mais tickets, mas Payment acceptance (845 det, CSAT 63,5%) tem a pior satisfação absoluta. Ambos precisam de ação.</div>
+        </div>
+      </div>
+      <div class="tp-item">
+        <div class="tp-num">2</div>
+        <div class="tp-body">
+          <div class="tp-hl">MXW supera CS em todos os 3 L2s analisados</div>
+          <div class="tp-detail">Feito único no Brasil: MXW CSAT é maior que CS NPS em HW (+5,6pp), PAY (+10,8pp) e ACCT (+3,4pp). CS absorve os casos mais complexos e piora sua métrica.</div>
+        </div>
+      </div>
+      <div class="tp-item">
+        <div class="tp-num">3</div>
+        <div class="tp-body">
+          <div class="tp-hl">Recusa antifraude (PAY-1) = perda de receita imediata</div>
+          <div class="tp-detail">42% dos detratores de Payment (355 casos) são por recusa de risco. Sellers perdem vendas in loco sem explicação. Nenhuma ferramenta disponível para o bot resolver.</div>
+        </div>
+      </div>
+      <div class="tp-item">
+        <div class="tp-num">4</div>
+        <div class="tp-body">
+          <div class="tp-hl">ACCT-6: falha sistêmica de Maxwell (zero resposta)</div>
+          <div class="tp-detail">91% dos detratores do cluster de código de ativação recebem zero resposta do bot. Maxwell consome contexto em tool_calls de startup e silencia. Bug crítico de infraestrutura.</div>
+        </div>
+      </div>
+      <div class="tp-item full">
+        <div class="tp-num">5</div>
+        <div class="tp-body">
+          <div class="tp-hl">3 acões de quick win: ferramenta RMA, teto transparênte e fix Maxwell</div>
+          <div class="tp-detail">Ferramenta de acompanhamento de RMA no MXW elimina HW-3 (~282 casos). Exibir limite de transação no app resolve PAY-2 (~186 casos). Correção do loop de tool_calls do Maxwell elimina ACCT-6 (~49 casos) com impacto cruzado em outros L2s.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-wrap">
+    <div class="chart-title">Comparação entre L2s — Métricas-chave</div>
+    <div class="chart-subtitle">Top 3 L2s por volume de detratores MXW · Jan–Mar 2026</div>
+    <table class="ex-table" style="width:100%">
+      <thead>
+        <tr>
+          <th>L2</th>
+          <th style="text-align:right">MXW Det</th>
+          <th style="text-align:right">% Det</th>
+          <th style="text-align:right">CSAT MXW</th>
+          <th style="text-align:right">CS NPS</th>
+          <th style="text-align:right">Gap MXW−CS</th>
+          <th>Principal cluster</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Hardware faults &amp; RMA</strong></td>
+          <td style="text-align:right">1.567</td>
+          <td style="text-align:right">27,8%</td>
+          <td style="text-align:right"><span class="csat-warn-cd">72,2%</span></td>
+          <td style="text-align:right">66,6%</td>
+          <td style="text-align:right"><span class="gap-badge gap-l">MXW +5,6pp</span></td>
+          <td>HW-1 Falha elétrica (38%)</td>
+        </tr>
+        <tr>
+          <td><strong>Payment acceptance</strong></td>
+          <td style="text-align:right">845</td>
+          <td style="text-align:right">36,5%</td>
+          <td style="text-align:right"><span class="csat-bad-cd">63,5%</span></td>
+          <td style="text-align:right">52,7%</td>
+          <td style="text-align:right"><span class="gap-badge gap-l">MXW +10,8pp</span></td>
+          <td>PAY-1 Recusa antifraude (42%)</td>
+        </tr>
+        <tr>
+          <td><strong>Account &amp; entitlement</strong></td>
+          <td style="text-align:right">616</td>
+          <td style="text-align:right">23,4%</td>
+          <td style="text-align:right"><span class="csat-warn-cd">76,6%</span></td>
+          <td style="text-align:right">73,2%</td>
+          <td style="text-align:right"><span class="gap-badge gap-l">MXW +3,4pp</span></td>
+          <td>ACCT-1 Vinculação conta (22%)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-title-cd">Exemplos representativos de conversação</div>
+  <div class="section-desc-cd">Casos ilustrativos dos padrões mais recorrentes identificados nas transcrições</div>
+
+  <div class="case-grid-cd">
+    <div class="case-card-cd">
+      <div class="case-hdr red-hdr">
+        <div class="case-hdr-title">HW-1 — Maquininha não liga + oferta de upgrade precoce</div>
+        <div class="case-hdr-id">ID: 1597daff-e296-46f6-b8c5-6f0b079610a4</div>
+        <div class="case-tags">
+          <span class="tag-c1">CSAT 1</span>
+          <span class="tag-mxw">MXW</span>
+          <span class="tag-hw">HW-1</span>
+        </div>
+      </div>
+      <div class="case-bdy">
+        <div class="msg-lbl">Seller</div>
+        <div class="msg-u">"Minha máquina não está funcionando"</div>
+        <div class="msg-lbl">Maxwell (BOT)</div>
+        <div class="msg-b">"Entendi. Antes de qualquer teste, tenho uma oferta especial para trocar seu Point por um modelo novo com desconto e compra imediata. Quer aproveitar a oferta de upgrade agora?"</div>
+        <div class="insight-cd">
+          <strong>Problema identificado</strong>
+          IA oferece upgrade antes de diagnosticar. Seller com máquina quebrada não quer comprar uma nova — quer resolver o problema atual. Experiência percebida como oportunista.
+        </div>
+      </div>
+    </div>
+
+    <div class="case-card-cd">
+      <div class="case-hdr orange-hdr">
+        <div class="case-hdr-title">PAY-1 — Recusa antifraude sem explicação</div>
+        <div class="case-hdr-id">CAS_CASE_ID: 429764107</div>
+        <div class="case-tags">
+          <span class="tag-c1">CS</span>
+          <span class="tag-ship">PAY-1</span>
+        </div>
+      </div>
+      <div class="case-bdy">
+        <div class="msg-lbl">Seller</div>
+        <div class="msg-u">"o cliente vai passar o cartão na minha maquininha...o pagamento não poderá ser realizado...já aconteceu várias vezes"</div>
+        <div class="msg-lbl">Agente CS</div>
+        <div class="msg-b">"Entendo sua frustração. As recusas podem ser geradas pelo sistema antifraude do Mercado Pago por diversos motivos. Infelizmente não consigo liberar transações individualmente."</div>
+        <div class="insight-cd">
+          <strong>Impacto direto na receita</strong>
+          Seller perde vendas in loco sem poder fazer nada. Nem MXW nem CS têm ferramenta para destravar. Problema de produto/política que afeta ambos os canais.
+        </div>
+      </div>
+    </div>
+
+    <div class="case-card-cd">
+      <div class="case-hdr red-hdr">
+        <div class="case-hdr-title">ACCT-6 — Maxwell emite zero resposta (silêncio total)</div>
+        <div class="case-hdr-id">CONVERSATION_ID: 4255d034-c621-4510-bbb5-60d4a631ca8d</div>
+        <div class="case-tags">
+          <span class="tag-c1">CSAT 2</span>
+          <span class="tag-mxw">MXW</span>
+          <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;background:#F3E8FF;color:#6B21A8">ACCT-6</span>
+        </div>
+      </div>
+      <div class="case-bdy">
+        <div class="msg-lbl">Seller</div>
+        <div class="msg-u">"Abiliar point pro"</div>
+        <div class="msg-lbl">Maxwell — startup tool chain (7 chamadas)</div>
+        <div class="msg-b" style="font-family:monospace;font-size:11px;color:#6B7280">
+          memory_get_all_memories → merchant-tools_list_devices → user-restrictions_get_user_restrictions_list → merchant-tools_list_commission_fees → user-account_get_user_notifications → user-activity_list_activities → bank-account_get_accounts
+        </div>
+        <div class="msg-lbl">Maxwell — resposta</div>
+        <div class="msg-b" style="color:#EF4444;font-style:italic">[sem resposta emitida — contexto esgotado pelo startup chain]</div>
+        <div class="insight-cd">
+          <strong>Bug crítico — 91% dos casos ACCT-6</strong>
+          Maxwell executa 5-9 tool_calls de startup consumindo o contexto disponível (12 000 tokens) antes de processar a intenção do seller. Resultado: zero mensagem emitida ao usuário. O seller aguarda, não recebe nada e avalia CSAT 1-2.
+        </div>
+      </div>
+    </div>
+
+    <div class="case-card-cd">
+      <div class="case-hdr orange-hdr">
+        <div class="case-hdr-title">HW-3 — RMA prometido e não executado</div>
+        <div class="case-hdr-id">CAS_CASE_ID: 431572425</div>
+        <div class="case-tags">
+          <span class="tag-c1">CS</span>
+          <span class="tag-ship">HW-3</span>
+        </div>
+      </div>
+      <div class="case-bdy">
+        <div class="msg-lbl">Seller</div>
+        <div class="msg-u">"Eu fiz uma reclamação com vocês sobre a maquininha. Vocês falaram que ia entregar uma, e até agora nada. E a maquininha que eu tenho ainda tá com problemas de não passar."</div>
+        <div class="msg-lbl">Agente CS</div>
+        <div class="msg-b">"Entendo a chateação, Odair. Verifiquei aqui e não há nenhum envio de maquininha novo em andamento. Vejo que o chamado anterior foi encerrado sem a conclusão do envio."</div>
+        <div class="insight-cd">
+          <strong>Reincidência = frustração elevada</strong>
+          Seller já havia aberto RMA anteriormente. CS confirma que o envio não ocorreu, mas não tem autonomia para expedição imediata. Seller perde mais tempo e confiança. Causa raiz: ausência de SLA monitorado para RMAs abertos.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title-cd">Plano de Ação Recomendado</div>
+  <div class="section-desc-cd">Ações priorizadas por impacto estimado e horizonte de implementação</div>
+
+  <div class="chart-card">
+    <table class="action-table-v2">
+      <thead>
+        <tr>
+          <th>Ação</th>
+          <th>Tipo</th>
+          <th>Horizonte</th>
+          <th>L2</th>
+          <th>Impacto Estimado</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Corrigir loop de tool_calls Maxwell — eliminar zero-resposta no ACCT-6</td>
+          <td><span class="pill qw">Quick Win</span></td>
+          <td>Sprint 1</td>
+          <td>ACCT</td>
+          <td><span class="impact-dot dot-h"></span>Alto — 91% de silencio eliminado</td>
+        </tr>
+        <tr>
+          <td>Ferramenta de acompanhamento de RMA em tempo real no MXW</td>
+          <td><span class="pill mp">MXW Tool</span></td>
+          <td>Sprint 2–3</td>
+          <td>HW</td>
+          <td><span class="impact-dot dot-h"></span>~282 casos HW-3 resolvidos</td>
+        </tr>
+        <tr>
+          <td>Exibir limite de transação vigente no app e permitir solicitação de aumento</td>
+          <td><span class="pill prod">Produto</span></td>
+          <td>Sprint 2–3</td>
+          <td>PAY</td>
+          <td><span class="impact-dot dot-h"></span>~186 casos PAY-2 endereçados</td>
+        </tr>
+        <tr>
+          <td>Bloquear oferta de upgrade antes de diagnóstico concluído no bot</td>
+          <td><span class="pill qw">Quick Win</span></td>
+          <td>Sprint 1</td>
+          <td>HW</td>
+          <td><span class="impact-dot dot-m"></span>Médio — melhora experiência HW-1</td>
+        </tr>
+        <tr>
+          <td>Criar fluxo de desbloqueio de PIN sem dependência de e-mail cadastrado</td>
+          <td><span class="pill mp">MXW Flow</span></td>
+          <td>Sprint 3–4</td>
+          <td>ACCT</td>
+          <td><span class="impact-dot dot-m"></span>~111 casos ACCT-2 resolvidos</td>
+        </tr>
+        <tr>
+          <td>Dashboard de status de habilitação VA/VR para sellers</td>
+          <td><span class="pill prod">Produto</span></td>
+          <td>Sprint 4–5</td>
+          <td>ACCT</td>
+          <td><span class="impact-dot dot-m"></span>~86 casos ACCT-4 endereçados</td>
+        </tr>
+        <tr>
+          <td>Rever política antifraude — feedback explícito ao seller sobre motivo de recusa</td>
+          <td><span class="pill pol">Política</span></td>
+          <td>Médio prazo</td>
+          <td>PAY</td>
+          <td><span class="impact-dot dot-h"></span>~355 casos PAY-1 impactados</td>
+        </tr>
+        <tr>
+          <td>Processo ágil de habilitação de bandeiras (Elo, Hipercard, internacionais)</td>
+          <td><span class="pill prod">Produto</span></td>
+          <td>Médio prazo</td>
+          <td>PAY</td>
+          <td><span class="impact-dot dot-m"></span>~85 casos PAY-4 endereçados</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  </div>
+</div>
+
+
+<div id="tab-cx" class="tab-panel">
+  <div class="main">
+
+  <div class="metric-note-cd">
+    <strong>Destaque MLB:</strong> Ao contrário de outros países, no Brasil o MXW supera o CS em <em>todos</em> os 3 L2s analisados. MXW lida bem com casos simples; os casos complexos escalados para CS pioram a métrica de NPS do canal humano. Além disso, casos com silencio do bot (zero resposta) podem ser excluídos da amostra de CSAT se nenhuma mensagem foi emitida.
+  </div>
+
+  <div class="section-title-cd">Padrões de falha por canal</div>
+
+  <!-- HW comp -->
+  <div class="section-header" style="margin-top:20px">
+    <h2 style="font-size:15px">Hardware faults &amp; RMA</h2>
+    <span class="l2-badge" style="background:#DBEAFE;color:#1E40AF">MXW 72,2% &gt; CS 66,6% (+5,6pp)</span>
+  </div>
+  <div class="comp-grid">
+    <div class="comp-col">
+      <span class="comp-col-hdr mxw-hdr">Maxwell (MXW) — CSAT 72,2%</span>
+      <div class="cluster-row">
+        <span class="cluster-pct-badge" style="background:#FEE2E2;color:#991B1B">HW-1</span>
+        Oferece upgrade antes de diagnosticar — gera rejeitação do seller
+      </div>
+      <div class="cluster-row">
+        <span class="cluster-pct-badge" style="background:#FEE2E2;color:#991B1B">HW-2</span>
+        Sem ferramenta de desbloqueio para POS TAMPERED
+      </div>
+      <div class="cluster-row">
+        <span class="cluster-pct-badge" style="background:#FEF3C7;color:#92400E">HW-3</span>
+        Não consegue consultar status de RMA em tempo real
+      </div>
+      <div class="cluster-row">
+        <span class="cluster-pct-badge" style="background:#D1FAE5;color:#065F46">HW-4</span>
+        Orienta reset de rede corretamente mas sem verificação remota
+      </div>
+    </div>
+    <div class="comp-col">
+      <span class="comp-col-hdr cs-hdr">CS Humano — NPS 66,6%</span>
+      <div class="cluster-row">
+        <span class="cluster-pct-badge" style="background:#FEE2E2;color:#991B1B">HW-1</span>
+        Encaminha RMA para casos que poderiam ser resolvidos remotamente
+      </div>
+      <div class="cluster-row">
+        <span class="cluster-pct-badge" style="background:#FEE2E2;color:#991B1B">HW-2</span>
+        Confirma RMA mas prazo de coleta não é cumprido
+      </div>
+      <div class="cluster-row">
+        <span class="cluster-pct-badge" style="background:#FEF3C7;color:#92400E">HW-3</span>
+        Absorve frustração acumulada de RMAs abertos há semanas
+      </div>
+      <div class="cluster-row">
+        <span class="cluster-pct-badge" style="background:#D1FAE5;color:#065F46">HW-5</span>
+        Resolve impresora/leitor bem, mas demanda é repássada ao CS
+      </div>
+    </div>
+  </div>
+
+  <div class="conv-section-title">Casos representativos — Hardware</div>
+  <div class="conv-examples-grid">
+    <div class="conv-example">
+      <div class="conv-example-hdr hdr-blue">
+        <span>MXW · HW-1 — Oferta de upgrade antes do diagnóstico</span>
+        <span class="conv-csat-badge">CSAT 1</span>
+      </div>
+      <div class="conv-example-body">
+        <div style="font-size:10px;color:var(--muted);font-family:monospace">586b7f8a-fa91-4ca5-ac73-3712a5dc5f86</div>
+        <div class="conv-msg usr"><span class="conv-msg-lbl">Seller</span>"Eu tenho problemas com minha Point Smart SMARTPOS1493913025"</div>
+        <div class="conv-msg bot"><span class="conv-msg-lbl">Maxwell</span>Executa startup tools → oferece upgrade com desconto antes de qualquer diagnóstico do equipamento</div>
+      </div>
+    </div>
+    <div class="conv-example">
+      <div class="conv-example-hdr hdr-blue">
+        <span>MXW · HW-1 — Máquina sem resposta ao carregador</span>
+        <span class="conv-csat-badge">CSAT 1</span>
+      </div>
+      <div class="conv-example-body">
+        <div style="font-size:10px;color:var(--muted);font-family:monospace">1597daff-e296-46f6-b8c5-6f0b079610a4</div>
+        <div class="conv-msg usr"><span class="conv-msg-lbl">Seller</span>"Minha máquina não está funcionando"</div>
+        <div class="conv-msg bot"><span class="conv-msg-lbl">Maxwell</span>"Entendi. Antes de qualquer teste, tenho uma oferta especial para trocar seu Point por um modelo novo com desconto..."</div>
+      </div>
+    </div>
+    <div class="conv-example">
+      <div class="conv-example-hdr hdr-green">
+        <span>CS · HW-1 — Maquininha não liga</span>
+        <span class="conv-channel-badge cs">CS</span>
+      </div>
+      <div class="conv-example-body">
+        <div style="font-size:10px;color:var(--muted);font-family:monospace">CAS_CASE_ID: 436803421</div>
+        <div class="conv-msg usr"><span class="conv-msg-lbl">Seller</span>"A minha maquininha parou de funcionar. Não está ligando."</div>
+        <div class="conv-msg rep"><span class="conv-msg-lbl">Agente CS</span>"Olá, bom dia! Me chamo Giulia, sou representante do Mercado Pago. Vou verificar o que está acontecendo com seu equipamento e abrir um RMA se necessário."</div>
+      </div>
+    </div>
+    <div class="conv-example">
+      <div class="conv-example-hdr hdr-orange">
+        <span>CS · HW-3 — RMA prometido e não executado</span>
+        <span class="conv-channel-badge cs">CS</span>
+      </div>
+      <div class="conv-example-body">
+        <div style="font-size:10px;color:var(--muted);font-family:monospace">CAS_CASE_ID: 431572425</div>
+        <div class="conv-msg usr"><span class="conv-msg-lbl">Seller</span>"Vocês falaram que ia entregar uma maquininha e até agora nada. A que tenho ainda tem problema de não passar."</div>
+        <div class="conv-msg rep"><span class="conv-msg-lbl">Agente CS</span>"Verifiquei aqui e não há nenhum envio de maquininha novo em andamento. O chamado anterior foi encerrado sem conclusão do envio."</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAY comp -->
+  <div class="section-header" style="margin-top:10px">
+    <h2 style="font-size:15px">Payment acceptance</h2>
+    <span class="l2-badge" style="background:#FEE2E2;color:#991B1B">Ambos ruins — MXW 63,5% &gt; CS 52,7% (+10,8pp)</span>
+  </div>
+  <div class="comp-grid">
+    <div class="comp-col">
+      <span class="comp-col-hdr mxw-hdr">Maxwell (MXW) — CSAT 63,5%</span>
+      <div class="cluster-row">
+        <span class="cluster-pct-badge" style="background:#FEE2E2;color:#991B1B">PAY-1</span>
+        Explica política antifraude mas não desbloqueou venda — seller insatisfeito
+      </div>
+      <div class="cluster-row">
+        <span class="cluster-pct-badge" style="background:#FEE2E2;color:#991B1B">PAY-2</span>
+        Não informa limite vigente nem oferece aumento
+      </div>
+      <div class="cluster-row">
+        <span class="cluster-pct-badge" style="background:#FEF3C7;color:#92400E">PAY-3</span>
+        Orienta configuração NFC mas parcialmente efetivo
+      </div>
+    </div>
+    <div class="comp-col">
+      <span class="comp-col-hdr cs-hdr">CS Humano — NPS 52,7%</span>
+      <div class="cluster-row">
+        <span class="cluster-pct-badge" style="background:#FEE2E2;color:#991B1B">PAY-1</span>
+        Também não consegue destravar recusas de risco — frustra mais pois era expectativa
+      </div>
+      <div class="cluster-row">
+        <span class="cluster-pct-badge" style="background:#FEE2E2;color:#991B1B">PAY-5</span>
+        Contestação de chargeback com SLA longo gera NPS negativo
+      </div>
+      <div class="cluster-row">
+        <span class="cluster-pct-badge" style="background:#FEF3C7;color:#92400E">PAY-4</span>
+        Bandeiras específicas dependem de time de produto — CS não resolve
+      </div>
+    </div>
+  </div>
+
+  <div class="conv-section-title">Casos representativos — Payment acceptance</div>
+  <div class="conv-examples-grid">
+    <div class="conv-example">
+      <div class="conv-example-hdr hdr-blue">
+        <span>MXW · PAY-1 — Recusa antifraude sem resolução</span>
+        <span class="conv-csat-badge c3">CSAT 3</span>
+      </div>
+      <div class="conv-example-body">
+        <div style="font-size:10px;color:var(--muted);font-family:monospace">29ac6347-35fc-4434-8c25-4ef42665ff60</div>
+        <div class="conv-msg usr"><span class="conv-msg-lbl">Seller</span>"Passar cartão de crédito"</div>
+        <div class="conv-msg bot"><span class="conv-msg-lbl">Maxwell</span>"Entendi! Você quer cobrar no cartão de crédito. Vai ser no celular (Tap to Pay) ou na maquininha Point? Me diga o valor e se quer parcelar."</div>
+      </div>
+    </div>
+    <div class="conv-example">
+      <div class="conv-example-hdr hdr-blue">
+        <span>MXW · PAY-1 — Recusa repetida sem causa informada</span>
+        <span class="conv-csat-badge">CSAT 2</span>
+      </div>
+      <div class="conv-example-body">
+        <div style="font-size:10px;color:var(--muted);font-family:monospace">2d7e39f6-e26b-49c9-b4e2-5ee2aa820029</div>
+        <div class="conv-msg usr"><span class="conv-msg-lbl">Seller</span>"Meu cliente está tentando pagar e está sendo recusado. Já aconteceu 3 vezes hoje."</div>
+        <div class="conv-msg bot"><span class="conv-msg-lbl">Maxwell</span>"Recusas podem ter vários motivos relacionados ao sistema antifraude. Recomendo que o cliente tente com outro cartão ou forma de pagamento."</div>
+      </div>
+    </div>
+    <div class="conv-example">
+      <div class="conv-example-hdr hdr-red">
+        <span>CS · PAY-1 — Recusa repetida em loja física</span>
+        <span class="conv-channel-badge cs">CS</span>
+      </div>
+      <div class="conv-example-body">
+        <div style="font-size:10px;color:var(--muted);font-family:monospace">CAS_CASE_ID: 429764107</div>
+        <div class="conv-msg usr"><span class="conv-msg-lbl">Seller</span>"O cliente vai passar o cartão na minha maquininha e o pagamento não poderá ser realizado. Já aconteceu várias vezes. Nem a segunda, nem a terceira vez."</div>
+        <div class="conv-msg rep"><span class="conv-msg-lbl">Agente CS</span>"As recusas podem ser geradas pelo sistema antifraude por diversos motivos. Infelizmente não consigo liberar transações individualmente."</div>
+      </div>
+    </div>
+    <div class="conv-example">
+      <div class="conv-example-hdr hdr-orange">
+        <span>CS · PAY-5 — Contestação de chargeback sem SLA</span>
+        <span class="conv-channel-badge cs">CS</span>
+      </div>
+      <div class="conv-example-body">
+        <div style="font-size:10px;color:var(--muted);font-family:monospace">CAS_CASE_ID: 434750398</div>
+        <div class="conv-msg usr"><span class="conv-msg-lbl">Seller</span>"Recebi uma contestação de um cliente e preciso disputar. Como faço? Já se passaram 10 dias sem retorno."</div>
+        <div class="conv-msg rep"><span class="conv-msg-lbl">Agente CS</span>"O prazo de análise de contestação é de até 30 dias úteis. Neste momento não consigo acelerar o processo — o time responsável entrará em contato."</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACCT comp -->
+  <div class="section-header" style="margin-top:10px">
+    <h2 style="font-size:15px">Account &amp; entitlement</h2>
+    <span class="l2-badge" style="background:#D1FAE5;color:#065F46">MXW 76,6% &gt; CS 73,2% (+3,4pp)</span>
+  </div>
+  <div class="comp-grid">
+    <div class="comp-col">
+      <span class="comp-col-hdr mxw-hdr">Maxwell (MXW) — CSAT 76,6%</span>
+      <div class="cluster-row">
+        <span class="cluster-pct-badge" style="background:#D1FAE5;color:#065F46">ACCT-1</span>
+        Orienta vinculação de conta satisfatoriamente na maioria dos casos
+      </div>
+      <div class="cluster-row">
+        <span class="cluster-pct-badge" style="background:#FEF3C7;color:#92400E">ACCT-2</span>
+        Reset de PIN funciona exceto quando e-mail não está disponível
+      </div>
+      <div class="cluster-row">
+        <span class="cluster-pct-badge" style="background:#FEE2E2;color:#991B1B">ACCT-6</span>
+        Silencio total em 91% dos casos de código de ativação
+      </div>
+    </div>
+    <div class="comp-col">
+      <span class="comp-col-hdr cs-hdr">CS Humano — NPS 73,2%</span>
+      <div class="cluster-row">
+        <span class="cluster-pct-badge" style="background:#FEF3C7;color:#92400E">ACCT-4</span>
+        Habilitação de VA/VR tem prazo longo e CS não consegue acelerar
+      </div>
+      <div class="cluster-row">
+        <span class="cluster-pct-badge" style="background:#D1FAE5;color:#065F46">ACCT-3</span>
+        Ativação resolvida pelo CS mas demora para chegar ao canal
+      </div>
+      <div class="cluster-row">
+        <span class="cluster-pct-badge" style="background:#FEF3C7;color:#92400E">ACCT-5</span>
+        Vendas na conta errada exigem intervenção manual de CS
+      </div>
+    </div>
+  </div>
+
+  <div class="conv-section-title">Casos representativos — Account &amp; entitlement</div>
+  <div class="conv-examples-grid">
+    <div class="conv-example">
+      <div class="conv-example-hdr hdr-red">
+        <span>MXW · ACCT-6 — Silêncio total (7 tool_calls)</span>
+        <span class="conv-csat-badge">CSAT 2</span>
+      </div>
+      <div class="conv-example-body">
+        <div style="font-size:10px;color:var(--muted);font-family:monospace">4255d034-c621-4510-bbb5-60d4a631ca8d</div>
+        <div class="conv-msg usr"><span class="conv-msg-lbl">Seller</span>"Abiliar point pro"</div>
+        <div class="conv-msg bot" style="font-family:monospace;font-size:11px;color:#6B7280"><span class="conv-msg-lbl">Maxwell</span>memory_get_all_memories → merchant-tools_list_devices → user-restrictions → commission_fees → notifications → activities → bank-account → <span style="color:#EF4444;font-weight:700">[sem resposta]</span></div>
+      </div>
+    </div>
+    <div class="conv-example">
+      <div class="conv-example-hdr hdr-red">
+        <span>MXW · ACCT-6 — Silêncio em VA/VR (7 tool_calls)</span>
+        <span class="conv-csat-badge">CSAT 1</span>
+      </div>
+      <div class="conv-example-body">
+        <div style="font-size:10px;color:var(--muted);font-family:monospace">b197363f-3411-48f4-a77c-b3a23c5b719d</div>
+        <div class="conv-msg usr"><span class="conv-msg-lbl">Seller</span>"Ativar alelo aproximação"</div>
+        <div class="conv-msg bot" style="font-family:monospace;font-size:11px;color:#6B7280"><span class="conv-msg-lbl">Maxwell</span>user-activity_list_activities → user-account_get_notifications → bank-account_get_accounts → merchant-tools_list_devices → restrictions → … → <span style="color:#EF4444;font-weight:700">[sem resposta]</span></div>
+      </div>
+    </div>
+    <div class="conv-example">
+      <div class="conv-example-hdr hdr-green">
+        <span>CS · ACCT-1 — Dúvida sobre vinculação da conta</span>
+        <span class="conv-channel-badge cs">CS</span>
+      </div>
+      <div class="conv-example-body">
+        <div style="font-size:10px;color:var(--muted);font-family:monospace">CAS_CASE_ID: 444569252</div>
+        <div class="conv-msg usr"><span class="conv-msg-lbl">Seller</span>"Quero mais informações sobre a maquininha. Como faço para vincular a uma conta diferente?"</div>
+        <div class="conv-msg rep"><span class="conv-msg-lbl">Agente CS</span>"Claro! Para vincular o Point a outra conta, você precisa desvincular o dispositivo atual nas configurações do app e depois ativar com a nova conta. Vou te guiar passo a passo."</div>
+      </div>
+    </div>
+    <div class="conv-example">
+      <div class="conv-example-hdr hdr-orange">
+        <span>CS · ACCT-4 — Habilitação VA/VR sem prazo definido</span>
+        <span class="conv-channel-badge cs">CS</span>
+      </div>
+      <div class="conv-example-body">
+        <div style="font-size:10px;color:var(--muted);font-family:monospace">CAS_CASE_ID: 429061314</div>
+        <div class="conv-msg usr"><span class="conv-msg-lbl">Seller</span>"Preciso habilitar vale-refeição e vale-alimentação na minha maquininha. Já faz 2 semanas que solicitei."</div>
+        <div class="conv-msg rep"><span class="conv-msg-lbl">Agente CS</span>"A habilitação de VA/VR passa por análise de credenciamento junto às bandeiras. O prazo é de até 10 dias úteis, mas posso verificar o status da sua solicitação."</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="diff-box">
+    <h3>Observações sobre o gap MXW vs CS no Brasil</h3>
+    <div class="diff-row">
+      <span class="diff-icon">&#x1F4CA;</span>
+      <div><strong>Por que MXW ganha no Brasil?</strong> Maxwell lida eficientemente com os casos de menor complexidade (reset de senha, orientação de configuração, informações básicas de RMA). Os casos complexos escalam para CS, que recebe a carga mais difícil e piora sua métrica.</div>
+    </div>
+    <div class="diff-row">
+      <span class="diff-icon">&#x26A0;</span>
+      <div><strong>Atenção ao viés de amostra:</strong> Casos com zero resposta do MXW (ACCT-6) podem ser excluídos da amostra de CSAT se nenhuma mensagem foi emitida, inflando artificialmente o CSAT MXW.</div>
+    </div>
+    <div class="diff-row">
+      <span class="diff-icon">&#x1F3AF;</span>
+      <div><strong>O problema real é de produto e política:</strong> Em PAY, tanto MXW quanto CS estão abaixo de 65%. Nenhum canal consegue resolver recusas de risco ou aumentar tetos de transação — isso requer mudança de produto e política.</div>
+    </div>
+  </div>
+
+  <div class="section-title-cd">Veredicto por L2</div>
+  <div class="verdict-grid">
+    <div class="verdict-card wins-mxw">
+      <div class="verdict-label" style="color:#1E40AF">&#x1F916; MXW vence — Hardware faults &amp; RMA</div>
+      <div style="font-size:13px;margin-bottom:8px"><strong>MXW CSAT 72,2% vs CS NPS 66,6%</strong> — gap +5,6pp favor MXW</div>
+      <div style="font-size:12px;color:var(--muted)">MXW resolve casos simples bem. CS absorve a frustração de RMAs atrasados e POS TAMPERED. Quick win: ferramenta de RMA no MXW fecha o gap.</div>
+    </div>
+    <div class="verdict-card wins-mxw">
+      <div class="verdict-label" style="color:#1E40AF">&#x1F916; MXW vence — Payment acceptance</div>
+      <div style="font-size:13px;margin-bottom:8px"><strong>MXW CSAT 63,5% vs CS NPS 52,7%</strong> — gap +10,8pp favor MXW</div>
+      <div style="font-size:12px;color:var(--muted)">Ambos os canais estão em zona crítica. Nenhum consegue resolver recusas de risco. CS tem NPS muito baixo pois seller esperava que o humano resolvesse e não conseguiu.</div>
+    </div>
+    <div class="verdict-card wins-mxw" style="grid-column: 1 / -1">
+      <div class="verdict-label" style="color:#1E40AF">&#x1F916; MXW vence — Account &amp; entitlement</div>
+      <div style="font-size:13px;margin-bottom:8px"><strong>MXW CSAT 76,6% vs CS NPS 73,2%</strong> — gap +3,4pp favor MXW</div>
+      <div style="font-size:12px;color:var(--muted)">Gap menor que HW e PAY. MXW resolve bem ativação e senha na maioria dos casos. Bug de silencio (ACCT-6) é ponto crítico — se corrigido, CSAT MXW sobe significativamente. CS recebe casos complexos como VA/VR e titularidade.</div>
+    </div>
+  </div>
+
+  </div>
+</div>
+
+
+<div class="footer">
+  Análise gerada via CX Analytics · Point Brasil (MLB) · Detratores Jan–Mar 2026 · MXW + CS
+</div>
+
+<script>
+
+function switchTab(btn, id) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
+function tog(hdr) {
+  var body = hdr.nextElementSibling;
+  var chev = hdr.querySelector('.chevron');
+  body.classList.toggle('open');
+  chev.style.transform = body.classList.contains('open') ? 'rotate(180deg)' : '';
+}
+
+</script>
+</body>
+</html>
