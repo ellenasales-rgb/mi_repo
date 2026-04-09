@@ -1,0 +1,2410 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
+// ---- CHART: Point L2 CSAT ----
+(function() {
+  var THRESHOLD_LINE = {
+    id: 'thresholdLines',
+    beforeDraw: function(chart) {
+      var ctx = chart.ctx;
+      var yAxis = chart.scales.y;
+      if (!yAxis) return;
+      // red at 65%
+      var y65 = yAxis.getPixelForValue(65);
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(chart.chartArea.left, y65);
+      ctx.lineTo(chart.chartArea.right, y65);
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = '#EF4444';
+      ctx.setLineDash([6,4]);
+      ctx.stroke();
+      // yellow at 77.7%
+      var y77 = yAxis.getPixelForValue(77.7);
+      ctx.beginPath();
+      ctx.moveTo(chart.chartArea.left, y77);
+      ctx.lineTo(chart.chartArea.right, y77);
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = '#EAB308';
+      ctx.setLineDash([4,3]);
+      ctx.stroke();
+      ctx.restore();
+    }
+  };
+  Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+  Chart.defaults.font.size = 11;
+  Chart.defaults.color = '#6B7280';
+
+  var labels = ['Shipments & Returns','Reconciliation & refunds','Payment acceptance','Otros','Account & entitlement','Cellular/SIM','Hardware faults & RMA'];
+  var data   = [63.9, 68.3, 68.9, 71.6, 79.4, 79.6, 82.7];
+  var colors = ['#FCA5A5','#FCA5A5','#FED7AA','#FEF3C7','#A7F3D0','#A7F3D0','#BBF7D0'];
+  var borders= ['#DC2626','#DC2626','#F97316','#EAB308','#10B981','#10B981','#10B981'];
+  var vols   = [471, 320, 476, 49, 499, 345, 2424];
+
+  new Chart(document.getElementById('chartPointL2'), {
+    type: 'bar',
+    plugins: [THRESHOLD_LINE],
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'CSAT %',
+        data: data,
+        backgroundColor: colors,
+        borderColor: borders,
+        borderWidth: 2,
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(c) { return ' CSAT: ' + c.raw + '%'; },
+            afterLabel: function(c) { return ' ' + vols[c.dataIndex].toLocaleString('pt-BR') + ' encuestas'; }
+          }
+        }
+      },
+      scales: {
+        y: { min: 50, max: 95, ticks: { callback: function(v) { return v + '%'; } }, grid: { color: '#F3F4F6' } },
+        x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+      }
+    }
+  });
+})();
+
+</script>
+<title>Point MLM · Análise de Detratores MXW</title>
+<style>
+  :root {
+    --mp-yellow: #FFE600; --mp-blue: #009EE3; --mp-dark: #1A1A2E;
+    --bg: #F4F6F9; --card: #FFFFFF; --card-bg: #FFFFFF;
+    --text: #1C1C1E; --muted: #6B7280; --border: #E5E7EB;
+    --t1: #EF4444; --t2: #F97316; --t3: #EAB308;
+    --t4: #3B82F6; --t5: #8B5CF6; --t6: #10B981; --t7: #9CA3AF;
+    --red: #EF4444; --orange: #F97316; --yellow: #EAB308;
+    --green: #10B981; --blue: #3B82F6; --purple: #8B5CF6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; }
+
+  /* HEADER */
+  .header { background: var(--mp-dark); color: white; padding: 28px 40px 24px; border-bottom: 4px solid var(--mp-yellow); }
+  .header-top { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+  .badge { background: var(--mp-yellow); color: var(--mp-dark); font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; letter-spacing: 0.5px; }
+  .badge.blue { background: var(--mp-blue); color: white; }
+  .badge.gray { background: #6B7280; color: white; }
+  .badge.red { background: var(--red); color: white; }
+  .header h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; }
+  .header-meta { color: #A0AEC0; font-size: 13px; margin-top: 4px; }
+  .header-meta span { margin-right: 20px; }
+
+  /* TABS */
+  .tab-nav { background: var(--mp-dark); border-bottom: 1px solid rgba(255,255,255,.12); padding: 0 40px; display: flex; gap: 4px; }
+  .tab-btn { padding: 12px 22px; font-size: 13px; font-weight: 600; color: #A0AEC0; border: none; background: none; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -1px; transition: color .2s, border-color .2s; white-space: nowrap; }
+  .tab-btn:hover { color: white; }
+  .tab-btn.active { color: var(--mp-yellow); border-bottom-color: var(--mp-yellow); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* LAYOUT */
+  .main { padding: 28px 40px; max-width: 1200px; margin: 0 auto; }
+
+  /* SUMMARY CARDS */
+  .summary-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 28px; }
+  .stat-card { background: var(--card); border-radius: 10px; padding: 16px 18px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  .stat-card .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .stat-card .value { font-size: 26px; font-weight: 700; color: var(--mp-dark); }
+  .stat-card .sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  /* CHART CARD */
+  .chart-card { background: var(--card); border-radius: 10px; padding: 22px 24px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,.06); margin-bottom: 28px; }
+  .chart-card h2 { font-size: 14px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 18px; }
+  .bar-row { display: flex; align-items: center; margin-bottom: 11px; gap: 10px; }
+  .bar-label { width: 200px; font-size: 13px; font-weight: 500; text-align: right; flex-shrink: 0; }
+  .bar-track { flex: 1; background: #F3F4F6; border-radius: 4px; height: 22px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; display: flex; align-items: center; padding-left: 8px; transition: width 0.6s ease; }
+  .bar-fill span { font-size: 12px; font-weight: 600; color: white; white-space: nowrap; }
+  .bar-count { width: 80px; font-size: 13px; color: var(--muted); flex-shrink: 0; }
+  .section-title { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px; }
+
+  /* TABLES */
+  table.ex-table { width: 100%; border-collapse: collapse; }
+  .ex-table thead tr { border-bottom: 2px solid var(--border); }
+  .ex-table th { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; padding: 6px 8px; text-align: left; }
+  .ex-table td { padding: 7px 8px; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .ex-table tr:last-child td { border-bottom: none; }
+  .ex-table tr:hover td { background: #FAFAFA; }
+  .conv-id { font-family: monospace; font-size: 11px; color: var(--muted); background: #F3F4F6; padding: 2px 6px; border-radius: 4px; white-space: nowrap; }
+
+  /* CARD */
+  .card { background: var(--card); border-radius: 10px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,.06); margin-bottom: 20px; overflow: hidden; }
+  .card-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); padding: 16px 20px 0; }
+  .card-body { padding: 12px 20px 20px; }
+
+  /* CLUSTERS */
+  .cluster { border: 1px solid var(--border); border-radius: 8px; margin-bottom: 14px; overflow: hidden; }
+  .cluster-header { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: #FAFAFA; cursor: pointer; user-select: none; }
+  .cluster-header:hover { background: #F3F4F6; }
+  .cluster-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .cluster-info { flex: 1; }
+  .cluster-info .name { font-size: 14px; font-weight: 600; }
+  .cluster-info .desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .cluster-right { display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
+  .cluster-pct { font-size: 20px; font-weight: 700; }
+  .cluster-count { font-size: 12px; color: var(--muted); text-align: right; }
+  .cluster-bar-wrap { width: 80px; height: 5px; background: #E5E7EB; border-radius: 3px; overflow: hidden; }
+  .cluster-bar-fill { height: 100%; border-radius: 3px; }
+  .chevron { color: var(--muted); font-size: 16px; transition: transform .2s; flex-shrink: 0; }
+  .cluster-body { display: none; padding: 14px 16px 16px; border-top: 1px solid var(--border); }
+  .cluster-body.open { display: block; }
+
+  /* SECTION HEADER */
+  .section-header { display: flex; align-items: center; gap: 12px; margin: 32px 0 16px; }
+  .section-header h2 { font-size: 18px; font-weight: 700; }
+  .l2-badge { font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 20px; }
+
+  /* INSIGHTS */
+  .sub-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 8px; }
+  .insight { border-left: 3px solid; padding: 10px 14px; border-radius: 0 6px 6px 0; margin-bottom: 8px; font-size: 13px; }
+  .insight.red { border-color: var(--red); background: #FEF2F2; }
+  .insight.orange { border-color: var(--orange); background: #FFF7ED; }
+  .insight.yellow { border-color: var(--yellow); background: #FEFCE8; }
+  .insight.blue { border-color: var(--blue); background: #EFF6FF; }
+  .insight.green { border-color: var(--green); background: #F0FDF4; }
+  .insight strong { display: block; margin-bottom: 3px; }
+
+  /* QUOTES */
+  .quote-block { background: #F9FAFB; border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; margin: 6px 0; font-size: 12px; font-style: italic; color: #374151; }
+  .quote-block .meta { font-style: normal; font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+
+  /* CASE COUNT & IDs */
+  .case-count { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 10px; background: rgba(0,0,0,.07); margin-left: 6px; vertical-align: middle; }
+  .conv-ids { margin-top: 6px; font-size: 11px; color: var(--muted); }
+  .conv-ids span { font-family: monospace; font-size: 10px; background: #F3F4F6; padding: 1px 5px; border-radius: 4px; margin-right: 4px; display: inline-block; margin-bottom: 3px; }
+
+  /* TWO-COL */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  /* ACTION TABLE */
+  table.action-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .action-table th { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; padding: 8px 10px; text-align: left; border-bottom: 2px solid var(--border); }
+  .action-table td { padding: 9px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .action-table tr:last-child td { border-bottom: none; }
+  .action-table tr:hover td { background: #FAFAFA; }
+  .pill { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px; white-space: nowrap; }
+  .pill.qw { background: #D1FAE5; color: #065F46; }
+  .pill.mp { background: #DBEAFE; color: #1E40AF; }
+  .pill.est { background: #F3E8FF; color: #6B21A8; }
+  .pill.op { background: #FEF3C7; color: #92400E; }
+  .pill.prod { background: #E0F2FE; color: #0C4A6E; }
+  .pill.pol { background: #FCE7F3; color: #9D174D; }
+
+  .divider { border: none; border-top: 2px solid var(--border); margin: 32px 0; }
+  .footer { padding: 20px 40px; text-align: center; font-size: 12px; color: var(--muted); border-top: 1px solid var(--border); margin-top: 10px; }
+
+  @media (max-width: 768px) {
+    .main { padding: 16px; }
+    .header { padding: 18px 16px; }
+    .tab-nav { padding: 0 16px; overflow-x: auto; }
+    .summary-row { grid-template-columns: repeat(2,1fr); }
+    .two-col { grid-template-columns: 1fr; }
+    .bar-label { width: 130px; font-size: 12px; }
+  }
+
+  /* ══ TAB-3 ANALÍTICA STYLE ══ */
+  .exec-box { background: linear-gradient(135deg, #1A1A2E 0%, #009EE3 100%); color: white; border-radius: 14px; padding: 26px 30px; margin-bottom: 28px; }
+  .exec-box h2 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px; opacity: 0.8; }
+  .exec-points { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .exec-points li { display: flex; gap: 12px; align-items: flex-start; font-size: 13px; line-height: 1.5; }
+  .exec-points li strong { color: #FFE600; }
+  .chart-wrap { background: var(--card); border-radius: 10px; padding: 22px 24px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,.06); margin-bottom: 28px; }
+  .chart-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .chart-subtitle { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+  .chart-inner { position: relative; }
+  .metric-note-cd { background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 8px; padding: 12px 16px; font-size: 12px; margin-bottom: 24px; }
+  .metric-note-cd strong { color: #1E40AF; }
+  .section-title-cd { font-size: 17px; font-weight: 700; color: var(--text); margin: 28px 0 6px; display: flex; align-items: center; gap: 10px; }
+  .section-title-cd::before { content: ''; display: block; width: 4px; height: 20px; background: var(--mp-blue); border-radius: 2px; }
+  .section-desc-cd { font-size: 13px; color: var(--muted); margin-bottom: 14px; }
+  .case-grid-cd { display: grid; grid-template-columns: repeat(2,1fr); gap: 16px; margin-bottom: 28px; }
+  .case-card-cd { background: var(--card); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  .case-hdr { padding: 13px 16px; border-bottom: 1px solid var(--border); }
+  .case-hdr.red-hdr { background: #FEF2F2; border-bottom-color: #FECACA; }
+  .case-hdr.orange-hdr { background: #FFF7ED; border-bottom-color: #FED7AA; }
+  .case-hdr-title { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
+  .case-hdr-id { font-family: monospace; font-size: 11px; color: var(--muted); }
+  .case-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+  .tag-c1 { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; background: #FEE2E2; color: #991B1B; }
+  .tag-mxw { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; background: #DBEAFE; color: #1E40AF; }
+  .tag-hw { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; background: #FEE2E2; color: #7F1D1D; }
+  .tag-ship { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; background: #FFF7ED; color: #7C2D12; }
+  .case-bdy { padding: 14px 16px; }
+  .msg-u { background: #EFF6FF; border-radius: 8px 8px 3px 8px; padding: 8px 12px; font-size: 12px; font-style: italic; color: #1E3A5F; margin-bottom: 6px; }
+  .msg-b { background: #F9FAFB; border: 1px solid var(--border); border-radius: 8px 8px 8px 3px; padding: 8px 12px; font-size: 12px; margin-bottom: 6px; }
+  .msg-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; margin-top: 8px; }
+  .msg-lbl:first-child { margin-top: 0; }
+  .insight-cd { background: #FFF7ED; border-left: 3px solid var(--orange); border-radius: 0 6px 6px 0; padding: 9px 12px; font-size: 12px; margin-top: 10px; }
+  .insight-cd strong { color: #C05621; display: block; margin-bottom: 2px; }
+  .csat-ok-cd { background: #D1FAE5; color: #065F46; font-weight: 700; font-size: 12px; padding: 2px 8px; border-radius: 20px; display: inline-block; }
+  .csat-warn-cd { background: #FEF3C7; color: #92400E; font-weight: 700; font-size: 12px; padding: 2px 8px; border-radius: 20px; display: inline-block; }
+  .csat-bad-cd { background: #FEE2E2; color: #991B1B; font-weight: 700; font-size: 12px; padding: 2px 8px; border-radius: 20px; display: inline-block; }
+  .gap-badge { font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 8px; }
+  .gap-h { background: #FEE2E2; color: #991B1B; }
+  .gap-m { background: #FEF3C7; color: #92400E; }
+  .gap-l { background: #D1FAE5; color: #065F46; }
+  .opp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 28px; }
+  .opp-card { background: var(--card); border-radius: 10px; border: 1px solid var(--border); padding: 18px 20px; }
+  .opp-card.opp-danger { border-left: 4px solid var(--red); }
+  .opp-card.opp-warning { border-left: 4px solid var(--orange); }
+  .opp-card-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px; padding: 3px 10px; border-radius: 12px; display: inline-block; }
+  .opp-item { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; margin-bottom: 12px; }
+  .opp-num { font-weight: 800; font-size: 16px; line-height: 1.2; flex-shrink: 0; }
+  .action-table-v2 { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .action-table-v2 th { background: #1A1A2E; color: white; padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; }
+  .action-table-v2 td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .action-table-v2 tr:hover td { background: #FAFAFA; }
+  .action-table-v2 tr:last-child td { border-bottom: none; }
+  .impact-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+  .dot-h { background: #DC2626; }
+  .dot-m { background: #F59E0B; }
+  .dot-l { background: #10B981; }
+
+  /* ── Exec-box talking points ── */
+  .exec-box { background: linear-gradient(135deg, #1A1A2E 0%, #009EE3 100%); color: white; border-radius: 14px; padding: 26px 30px; margin-bottom: 28px; }
+  .exec-box h2 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 18px; opacity: 0.7; }
+  .tp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .tp-item { display: flex; gap: 12px; align-items: flex-start; background: rgba(255,255,255,0.08); border-radius: 8px; padding: 12px 14px; }
+  .tp-item.full { grid-column: 1 / -1; }
+  .tp-num { background: #FFE600; color: #1A1A2E; font-weight: 800; font-size: 13px; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .tp-body { flex: 1; }
+  .tp-hl { font-size: 13px; font-weight: 700; color: #FFE600; margin-bottom: 3px; line-height: 1.3; }
+  .tp-detail { font-size: 12px; color: rgba(255,255,255,0.82); line-height: 1.4; }
+  @media (max-width: 768px) { .tp-grid { grid-template-columns: 1fr; } .tp-item.full { grid-column: auto; } }
+
+  @media (max-width: 768px) { .case-grid-cd { grid-template-columns: 1fr; } .opp-grid { grid-template-columns: 1fr; } }
+
+
+  /* ── CX vs MXW tab ── */
+  .comp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 28px; }
+  .comp-col { background: var(--card); border-radius: 10px; border: 1px solid var(--border); padding: 18px 20px; }
+  .comp-col-hdr { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; padding: 4px 12px; border-radius: 10px; display: inline-block; margin-bottom: 14px; }
+  .mxw-hdr { background: #DBEAFE; color: #1E40AF; }
+  .cs-hdr { background: #D1FAE5; color: #065F46; }
+  .cluster-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; font-size: 13px; }
+  .cluster-pct-badge { font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 8px; flex-shrink: 0; }
+  .diff-box { background: var(--card); border-radius: 10px; border: 1px solid var(--border); padding: 20px; margin-bottom: 28px; }
+  .diff-box h3 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; color: var(--muted); margin-bottom: 16px; }
+  .diff-row { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 12px; font-size: 13px; }
+  .diff-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .verdict-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 28px; }
+  .verdict-card { border-radius: 10px; border: 1px solid var(--border); padding: 16px 18px; }
+  .verdict-card.wins-mxw { border-left: 4px solid #3B82F6; }
+  .verdict-card.wins-cs { border-left: 4px solid #10B981; }
+  .verdict-card.tie { border-left: 4px solid #EAB308; }
+  .verdict-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  @media (max-width: 768px) { .comp-grid { grid-template-columns: 1fr; } .verdict-grid { grid-template-columns: 1fr; } }
+
+  /* Conversation examples */
+  .conv-section-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin: 24px 0 12px; }
+  .conv-examples-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .conv-example { background: var(--card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .conv-example-hdr { padding: 10px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .conv-example-hdr.hdr-blue { background: #EFF6FF; color: #1E40AF; }
+  .conv-example-hdr.hdr-orange { background: #FFF7ED; color: #92400E; }
+  .conv-example-hdr.hdr-red { background: #FEF2F2; color: #991B1B; }
+  .conv-example-hdr.hdr-green { background: #F0FDF4; color: #166534; }
+  .conv-example-body { padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; }
+  .conv-msg { padding: 7px 10px; border-radius: 8px; font-size: 12px; line-height: 1.45; }
+  .conv-msg.usr { background: #EFF6FF; color: #1E3A5F; border-radius: 8px 8px 3px 8px; }
+  .conv-msg.bot { background: #F9FAFB; border: 1px solid var(--border); border-radius: 8px 8px 8px 3px; color: #374151; }
+  .conv-msg.rep { background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 8px 8px 8px 3px; color: #166534; }
+  .conv-msg-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
+  .conv-csat-badge { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 8px; background: #FEE2E2; color: #991B1B; }
+  .conv-csat-badge.c2 { background: #FEF3C7; color: #92400E; }
+  .conv-csat-badge.c3 { background: #FEF9C3; color: #713F12; }
+  .conv-channel-badge { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 8px; background: #DBEAFE; color: #1E40AF; }
+  .conv-channel-badge.cs { background: #D1FAE5; color: #065F46; }
+  @media (max-width: 768px) { .conv-examples-grid { grid-template-columns: 1fr; } }
+
+</style>
+
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <span class="badge">CX Analytics</span>
+    <span class="badge blue">MLM</span>
+    <span class="badge gray">Point · MXW</span>
+    <span class="badge red">Detratores</span>
+  </div>
+  <h1>Análise de Detratores — Produto Point</h1>
+  <div class="header-meta">
+    <span>📅 Janeiro – Março 2026</span>
+    <span>🌎 México (MLM)</span>
+    <span>🤖 AI_CONVERSATION (MXW)</span>
+    <span>📊 CSAT 1–3 · Jan–Mar 2026</span>
+  </div>
+</div>
+
+<nav class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab(this,'tab-l2')">📊 Visão por L2</button>
+  <button class="tab-btn" onclick="switchTab(this,'tab-transcricoes')">🔍 Análise de Transcrições</button>
+  <button class="tab-btn" onclick="switchTab(this,'tab-analitica')">📈 Visão Analítica</button>
+  <button class="tab-btn" onclick="switchTab(this,'tab-cx')">🔄 CX vs MXW</button>
+</nav>
+
+<div id="tab-l2" class="tab-panel active">
+  <div class="main">
+
+
+  <!-- SUMMARY CARDS -->
+  <div class="summary-row">
+    <div class="stat-card">
+      <div class="label">L1</div>
+      <div class="value" style="font-size:18px">Point</div>
+      <div class="sub">Tipificação nível 1</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Total Detratores (MXW)</div>
+      <div class="value">1.024</div>
+      <div class="sub">CSAT_RATING 1–3 · com encuesta</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">CSAT Total Point MLM</div>
+      <div class="value" style="color:var(--mp-blue)">77,7%</div>
+      <div class="sub">referência para gap por L2</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Maior gap CSAT (det/enc L1)</div>
+      <div class="value" style="color:var(--t1)">9,1 pp</div>
+      <div class="sub">Hardware faults &amp; RMA</div>
+    </div>
+  </div>
+
+  <!-- L2 SECTION TITLE -->
+  <div class="section-title">Distribuição por L2 (Tipificação Nível 2)</div>
+
+  <!-- BAR CHART L2 -->
+  <div class="chart-card">
+    <h2>Detratores por L2 — volume expandido</h2>
+
+    <div class="bar-row">
+      <div class="bar-label" style="width:260px">Hardware faults & RMA</div>
+      <div class="bar-track"><div class="bar-fill" style="width:40.8%;background:var(--t2)"><span>418</span></div></div>
+      <div class="bar-count" style="width:120px;font-size:12px">17,3% det · CSAT 82,7%</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label" style="width:260px">Shipments & Returns</div>
+      <div class="bar-track"><div class="bar-fill" style="width:16.6%;background:var(--t1)"><span>170</span></div></div>
+      <div class="bar-count" style="width:120px;font-size:12px">36,1% det · CSAT 63,9%</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label" style="width:260px">Payment acceptance & usage</div>
+      <div class="bar-track"><div class="bar-fill" style="width:14.5%;background:var(--t1)"><span>148</span></div></div>
+      <div class="bar-count" style="width:120px;font-size:12px">31,1% det · CSAT 68,9%</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label" style="width:260px">Account & entitlement mgmt</div>
+      <div class="bar-track"><div class="bar-fill" style="width:10.1%;background:var(--t3)"><span>103</span></div></div>
+      <div class="bar-count" style="width:120px;font-size:12px">20,6% det · CSAT 79,4%</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label" style="width:260px">Reconciliation & refunds</div>
+      <div class="bar-track"><div class="bar-fill" style="width:9.9%;background:var(--t1)"><span>101</span></div></div>
+      <div class="bar-count" style="width:120px;font-size:12px">31,7% det · CSAT 68,3%</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label" style="width:260px">Cellular/SIM connectivity</div>
+      <div class="bar-track"><div class="bar-fill" style="width:6.8%;background:var(--t3)"><span>70</span></div></div>
+      <div class="bar-count" style="width:120px;font-size:12px">20,4% det · CSAT 79,6%</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label" style="width:260px">Otros</div>
+      <div class="bar-track"><div class="bar-fill" style="width:1.4%;background:var(--t7)"><span>14</span></div></div>
+      <div class="bar-count" style="width:120px;font-size:12px">28,4% det · CSAT 71,6%</div>
+    </div>
+  </div>
+
+  <!-- L2 TABLE -->
+  <div class="chart-card">
+    <h2>Tabela completa por L2 — ordenado por gap CSAT (maior → menor)</h2>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:16px">Gap CSAT = detratores L2 / encuestas L1 total (4.584). Representa a contribuição de cada L2 na taxa de detração do Point MLM.</p>
+    <table class="ex-table" style="width:100%">
+      <thead>
+        <tr>
+          <th>L2</th>
+          <th style="text-align:right">Conversas</th>
+          <th style="text-align:right">Encuestas</th>
+          <th style="text-align:right">Detratores</th>
+          <th style="text-align:right">% Detrator (L2)</th>
+          <th style="text-align:right">CSAT L2</th>
+          <th style="text-align:right">Gap CSAT ↓</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Hardware faults &amp; RMA</td>
+          <td style="text-align:right">2.424</td>
+          <td style="text-align:right">2.424</td>
+          <td style="text-align:right">418</td>
+          <td style="text-align:right">17,3%</td>
+          <td style="text-align:right">82,7%</td>
+          <td style="text-align:right;color:#EF4444;font-weight:700">9,1 pp</td>
+        </tr>
+        <tr>
+          <td>Shipments, deliveries &amp; returns</td>
+          <td style="text-align:right">471</td>
+          <td style="text-align:right">471</td>
+          <td style="text-align:right">170</td>
+          <td style="text-align:right">36,1%</td>
+          <td style="text-align:right">63,9%</td>
+          <td style="text-align:right;color:#EF4444;font-weight:700">3,7 pp</td>
+        </tr>
+        <tr>
+          <td>Payment acceptance &amp; usage</td>
+          <td style="text-align:right">476</td>
+          <td style="text-align:right">476</td>
+          <td style="text-align:right">148</td>
+          <td style="text-align:right">31,1%</td>
+          <td style="text-align:right">68,9%</td>
+          <td style="text-align:right;color:#F97316;font-weight:700">3,2 pp</td>
+        </tr>
+        <tr>
+          <td>Account &amp; entitlement management</td>
+          <td style="text-align:right">499</td>
+          <td style="text-align:right">499</td>
+          <td style="text-align:right">103</td>
+          <td style="text-align:right">20,6%</td>
+          <td style="text-align:right">79,4%</td>
+          <td style="text-align:right;color:#F97316;font-weight:700">2,2 pp</td>
+        </tr>
+        <tr>
+          <td>Reconciliation &amp; refunds</td>
+          <td style="text-align:right">320</td>
+          <td style="text-align:right">320</td>
+          <td style="text-align:right">101</td>
+          <td style="text-align:right">31,7%</td>
+          <td style="text-align:right">68,3%</td>
+          <td style="text-align:right;color:#F97316;font-weight:700">2,2 pp</td>
+        </tr>
+        <tr>
+          <td>Cellular/SIM connectivity</td>
+          <td style="text-align:right">345</td>
+          <td style="text-align:right">345</td>
+          <td style="text-align:right">70</td>
+          <td style="text-align:right">20,4%</td>
+          <td style="text-align:right">79,6%</td>
+          <td style="text-align:right;color:#EAB308;font-weight:700">1,5 pp</td>
+        </tr>
+        <tr>
+          <td>Otros</td>
+          <td style="text-align:right">49</td>
+          <td style="text-align:right">49</td>
+          <td style="text-align:right">14</td>
+          <td style="text-align:right">28,4%</td>
+          <td style="text-align:right">71,6%</td>
+          <td style="text-align:right;color:#6B7280;font-weight:700">0,3 pp</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr style="border-top:2px solid var(--border);font-weight:600">
+          <td>TOTAL Point MLM (MXW)</td>
+          <td style="text-align:right">4.584</td>
+          <td style="text-align:right">4.584</td>
+          <td style="text-align:right">1.024</td>
+          <td style="text-align:right">—</td>
+          <td style="text-align:right">77,7%</td>
+          <td style="text-align:right">—</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+
+  </div>
+</div>
+
+<div id="tab-transcricoes" class="tab-panel">
+  <div class="main">
+
+
+  <!-- SUMMARY -->
+  <div class="summary-row">
+    <div class="stat-card">
+      <div class="label">Transcrições analisadas</div>
+      <div class="value">276</div>
+      <div class="sub">CSAT 1–3 · MXW · Jan–Mar 2026</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Dor dominante — Hardware</div>
+      <div class="value" style="color:var(--red)">54%</div>
+      <div class="sub">Terminal não liga / não carrega</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Dor dominante — Shipments</div>
+      <div class="value" style="color:var(--orange)">35%</div>
+      <div class="sub">Rollos de papel sem reposição</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Principal gap da IA</div>
+      <div class="value" style="font-size:16px;color:var(--red)">Sem ação</div>
+      <div class="sub">IA orienta mas não resolve — seller busca alternativa</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- L2: HARDWARE FAULTS & RMA -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div class="section-header">
+    <span style="font-size:22px">🔧</span>
+    <h2>Hardware faults &amp; RMA</h2>
+    <span class="l2-badge" style="background:#FEE2E2;color:#991B1B">185 detratores · CSAT 82,7% · Gap +5,1 pp</span>
+  </div>
+
+  <!-- DORES -->
+  <div class="card">
+    <div class="card-title">Clusters de dores do usuário</div>
+    <div class="card-body">
+
+      <div class="cluster">
+        <div class="cluster-header" onclick="tog(this)">
+          <div class="cluster-dot" style="background:var(--red)"></div>
+          <div class="cluster-info">
+            <div class="name">Terminal não liga / não carrega</div>
+            <div class="desc">Point Smart A910, Point Mini — sem resposta mesmo conectada ao carregador</div>
+          </div>
+          <div class="cluster-right">
+            <div>
+              <div class="cluster-pct" style="color:var(--red)">54%</div>
+              <div class="cluster-count">~100 casos</div>
+            </div>
+            <div><div class="cluster-bar-wrap"><div class="cluster-bar-fill" style="width:54%;background:var(--red)"></div></div></div>
+          </div>
+          <div class="chevron">▾</div>
+        </div>
+        <div class="cluster-body open">
+          <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Maior driver de insatisfação. Sellers reportam terminal que não acende mesmo conectada, sem luz de carregamento, sem vibração. Maioria já tentou: cargador original, outro cargador, carga overnight — sem resultado.</p>
+          <div class="sub-label">Trechos representativos</div>
+          <div class="quote-block"><div class="meta">CSAT 1</div>"Ya la tengo conectada, pero no enciende el foco rojo que indica que está cargando [...] Déjame mejor pedir otra en otra parte porque si me urje"</div>
+          <div class="quote-block"><div class="meta">CSAT 3</div>"Ya se cumplieron las 2 horas y más pero lamentablemente no dio ninguna señal de luz, vibración, pantalla y tampoco encendió. Sigue estando igual sin encender o dar alguna señal de respuesta al estar conectada"</div>
+          <div class="quote-block"><div class="meta">CSAT 1</div>"No mantiene la carga se apaga en cuanto la desxonecto y falla poquito el touch [...] Mi terminal falla ocupo cobrar y no puedo y no tengo tiempo de ir a dejarla. Por lo cual quedare sin venta con tarjeta"</div>
+          <div class="quote-block"><div class="meta">CSAT 1 — pós-CSAT</div>"Mi terminal ya no prendio y necesito un remplazo me dice que tengo que llevarla a una sucursal y esperarme hasta después del 2 de marzo"</div>
+        </div>
+      </div>
+
+      <div class="cluster">
+        <div class="cluster-header" onclick="tog(this)">
+          <div class="cluster-dot" style="background:var(--orange)"></div>
+          <div class="cluster-info">
+            <div class="name">Falha no leitor de cartão / cobro bloqueado</div>
+            <div class="desc">Terminal não lê chip, aproximação falha, cobro não avança após digitar o valor</div>
+          </div>
+          <div class="cluster-right">
+            <div>
+              <div class="cluster-pct" style="color:var(--orange)">11%</div>
+              <div class="cluster-count">~20 casos</div>
+            </div>
+            <div><div class="cluster-bar-wrap"><div class="cluster-bar-fill" style="width:11%;background:var(--orange)"></div></div></div>
+          </div>
+          <div class="chevron">▾</div>
+        </div>
+        <div class="cluster-body">
+          <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Seller digita o valor, terminal não avança para a tela de inserção de cartão. Ou: cartão inserido/aproximado sem leitura. Inclui casos onde cobro funciona por chip mas falha por aproximação.</p>
+          <div class="sub-label">Trechos representativos</div>
+          <div class="quote-block"><div class="meta">CSAT 1</div>"Después de poner el monto no me deja cobrar. No avanza de ese punto [...] antes de poner la tarjeta, no me muestra ningún mensaje"</div>
+          <div class="quote-block"><div class="meta">CSAT 1</div>"Mi terminal point no recibe tarjeta broxel visa"</div>
+          <div class="quote-block"><div class="meta">CSAT 1</div>"No pasan las tarjetas. Ya lo reinicié y limpié los chips y nada. También ocupó el sensor y tampoco pasan las tarjetas"</div>
+        </div>
+      </div>
+
+      <div class="cluster">
+        <div class="cluster-header" onclick="tog(this)">
+          <div class="cluster-dot" style="background:var(--yellow)"></div>
+          <div class="cluster-info">
+            <div class="name">Bateria com degradação acelerada</div>
+            <div class="desc">Terminal dura 1 dia mesmo apagada, se descarrega rápido, não mantém autonomia</div>
+          </div>
+          <div class="cluster-right">
+            <div>
+              <div class="cluster-pct" style="color:var(--yellow)">9%</div>
+              <div class="cluster-count">~16 casos</div>
+            </div>
+            <div><div class="cluster-bar-wrap"><div class="cluster-bar-fill" style="width:9%;background:var(--yellow)"></div></div></div>
+          </div>
+          <div class="chevron">▾</div>
+        </div>
+        <div class="cluster-body">
+          <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Terminal perde carga mesmo desligada (E30s relatado). Seller não consegue usar durante o dia sem estar conectada. Problema estrutural de hardware — não resolvível por triagem.</p>
+          <div class="quote-block"><div class="meta">CSAT 1</div>"También se descarga aún apagada se descarga en un dia [...] aún cargándola al 100 la batería me dura un dia y eso estando apagada [...] Tuve que descargar Tap to Pay porque mi mini no funciona"</div>
+        </div>
+      </div>
+
+      <div class="cluster">
+        <div class="cluster-header" onclick="tog(this)">
+          <div class="cluster-dot" style="background:var(--blue)"></div>
+          <div class="cluster-info">
+            <div class="name">Touch / tela travada</div>
+            <div class="desc">Touch sem resposta, terminal trava em loop, câmera não abre</div>
+          </div>
+          <div class="cluster-right">
+            <div>
+              <div class="cluster-pct" style="color:var(--blue)">8%</div>
+              <div class="cluster-count">~14 casos</div>
+            </div>
+            <div><div class="cluster-bar-wrap"><div class="cluster-bar-fill" style="width:8%;background:var(--blue)"></div></div></div>
+          </div>
+          <div class="chevron">▾</div>
+        </div>
+        <div class="cluster-body">
+          <div class="quote-block"><div class="meta">CSAT 1</div>"No mantiene la carga se apaga en cuanto la desxonecto y falla poquito el touch [...] y asta se traba"</div>
+          <div class="quote-block"><div class="meta">CSAT</div>"Point Smart 2 atascada en bucle QR"</div>
+        </div>
+      </div>
+
+      <div class="cluster">
+        <div class="cluster-header" onclick="tog(this)">
+          <div class="cluster-dot" style="background:#8B5CF6)"></div>
+          <div class="cluster-info">
+            <div class="name">Sem sinal / conectividade</div>
+            <div class="desc">Point Air D20 sem rede, Bluetooth não pareia, SIM suspensa — já coberto em L2 Cellular/SIM, mas aparece em hardware</div>
+          </div>
+          <div class="cluster-right">
+            <div>
+              <div class="cluster-pct" style="color:#8B5CF6">5%</div>
+              <div class="cluster-count">~10 casos</div>
+            </div>
+            <div><div class="cluster-bar-wrap"><div class="cluster-bar-fill" style="width:5%;background:#8B5CF6"></div></div></div>
+          </div>
+          <div class="chevron">▾</div>
+        </div>
+        <div class="cluster-body">
+          <div class="quote-block"><div class="meta">CSAT 1</div>"Mi terminal point air me sale que no tiene señal [...] Es que la necesito para mañana :( [...] Que tristeza tanta fe le tenía a la terminal"</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SOLUÇÕES IA HW -->
+  <div class="card">
+    <div class="card-title">Soluções indicadas pela IA e fricções identificadas</div>
+    <div class="card-body">
+
+      <div class="insight orange">
+        <strong>⚠️ Contexto importante: IA opera via flows estruturados (botões/UI), não texto livre</strong>
+        A maior parte das respostas da IA não aparece como texto nas transcrições — são flows de UI (menu de opções, seleção de sintoma). O que identificamos vem das respostas do seller às perguntas da IA e dos comentários pós-CSAT.
+      </div>
+
+      <div class="two-col" style="margin-top:16px">
+        <div>
+          <div class="sub-label" style="margin-bottom:10px">Padrão de atendimento da IA (inferido)</div>
+          <div class="insight blue">
+            <strong>1. Coleta número de série → identifica modelo</strong>
+            IA solicita SMARTPOS/A910 e categoriza o sintoma via menu estruturado. Presente em praticamente todos os casos — padrão de entrada do fluxo.
+          </div>
+          <div class="insight blue">
+            <strong>2. Triage básica: "deixe carregando 2h" <span class="case-count">13 casos</span></strong>
+            Solução padrão para "não liga". Sellers instruídos a conectar ao cargador original por 2h. Problema: sellers que já tentaram overnight (~8h) ficam presos nessa etapa.
+            <div class="conv-ids">IDs: <span>29dc0c27-87c7-47f1-b57c-db9b4b97c7dc</span><span>7e3bc86d-e230-4c92-8918-f52bbeca71fb</span><span>42916908-79f4-4abc-808e-c9b7a5068add</span><span>95bafdf9-3b8b-4883-a3af-544541c022cb</span><span>a9f639ac-9738-4a0c-99b6-9b750f4b433b</span></div>
+          </div>
+          <div class="insight blue">
+            <strong>3. Reinício / reset do dispositivo <span class="case-count">10 casos</span></strong>
+            IA instrui a reiniciar o terminal antes de abrir RMA.
+            <div class="conv-ids">IDs: <span>82c007b8-6ba0-473b-8c87-3221614d6008</span><span>b54d578c-ead7-476a-880a-e07ad503bd2a</span><span>2625cdba-957c-41d2-9779-5c5cb92c7237</span><span>14149072-7975-478c-9d60-e8f67cff5fba</span><span>8282a4bb-a236-4ee3-baf5-1059762215e0</span></div>
+          </div>
+          <div class="insight blue">
+            <strong>4. Se persiste → inicia RMA: levar ao DHL / agência <span class="case-count">10 casos</span></strong>
+            Principal saída da IA para falhas confirmadas. Direciona para entrega presencial em DHL ou ponto de serviço autorizado.
+            <div class="conv-ids">IDs: <span>f50aede1-2719-481c-8cea-d68dd1e55b01</span><span>bd2d9bcf-4e22-479a-8c0e-c1b6758907d3</span><span>fe0eb179-d621-433a-b223-b8c9bdd862f4</span><span>7c4bd80b-c3a3-4f53-82a3-0a2ee240712f</span><span>e71439ea-43cc-4adf-b7ad-5456bd6b4a7a</span></div>
+          </div>
+          <div class="insight blue">
+            <strong>5. Passos de triage adicionais (cabo, modelo, configuração) <span class="case-count">6 casos</span></strong>
+            Verificação de cabo original, modelo do dispositivo, configurações básicas.
+            <div class="conv-ids">IDs: <span>1b79fbf7-b921-43d1-9070-e82b55f9fac9</span><span>42916908-79f4-4abc-808e-c9b7a5068add</span><span>f1d848bc-4fe2-4149-88f0-0d6a47531885</span><span>6b5ad86c-2cfc-4e69-a4a6-a0dd3e1a7f71</span><span>880048f4-7ba0-4557-8829-2089ac251915</span></div>
+          </div>
+          <div class="insight blue">
+            <strong>6. Oferta de link para compra de nova terminal <span class="case-count">5 casos</span></strong>
+            Quando RMA não é aplicável ou seller rejeita o processo, IA oferece link de compra.
+            <div class="conv-ids">IDs: <span>ee33e0f8-598b-4f9b-90fe-1f8d1133f4cc</span><span>7c4bd80b-c3a3-4f53-82a3-0a2ee240712f</span><span>e71439ea-43cc-4adf-b7ad-5456bd6b4a7a</span><span>6b024f6f-1c43-4880-bda1-4fc60a04c0d7</span><span>69631eae-398d-4315-a308-a2f396ccfac5</span></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="sub-label" style="margin-bottom:10px">Fricções críticas identificadas nas transcrições</div>
+          <div class="insight red">
+            <strong>🔴 Processo RMA presencial — sem coleta em domicílio <span class="case-count">4+ casos</span></strong>
+            Sellers com horário comercial ou sem mobilidade não conseguem levar ao DHL/agência. Número real maior — keyword matching conservador para esta fricção.
+            <div class="conv-ids">IDs: <span>05bfc0e1-c32b-4fb5-aafa-7e9b0f368eb4</span><span>7c4bd80b-c3a3-4f53-82a3-0a2ee240712f</span><span>e71439ea-43cc-4adf-b7ad-5456bd6b4a7a</span><span>9b3bcc5f-2a84-41b6-bd66-acb649fa4a24</span></div>
+          </div>
+          <div class="insight red">
+            <strong>🔴 Triage de 2h aplicada mesmo após tentativa equivalente <span class="case-count">13 casos</span></strong>
+            Sellers que já deixaram carregando overnight (8h+) são instruídos a tentar mais 2h. Desgasta confiança e atrasa o RMA.
+            <div class="conv-ids">IDs: <span>02d10ca2-b75b-4d30-8115-e3d320ffb28a</span><span>7e3bc86d-e230-4c92-8918-f52bbeca71fb</span><span>6e9105fb-319f-4085-8dcc-dfc3374524f5</span><span>42916908-79f4-4abc-808e-c9b7a5068add</span><span>f50aede1-2719-481c-8cea-d68dd1e55b01</span></div>
+          </div>
+          <div class="insight red">
+            <strong>🔴 IA encerra o atendimento sem alternativa <span class="case-count">1 caso identificado</span></strong>
+            IA responde "Ok, gracias, entonces buscarás otras opciones de cobro. Adiós" quando não tem mais fluxo — abandono explícito.
+            <div class="conv-ids">IDs: <span>95bafdf9-3b8b-4883-a3af-544541c022cb</span></div>
+          </div>
+          <div class="insight orange">
+            <strong>🟠 IA sem opções para o seller <span class="case-count">2 casos</span></strong>
+            Seller relata explicitamente que a IA "no da opciones" ou "no me llegó las opciones para lo que ocupo".
+            <div class="conv-ids">IDs: <span>1b79fbf7-b921-43d1-9070-e82b55f9fac9</span><span>7c4bd80b-c3a3-4f53-82a3-0a2ee240712f</span></div>
+          </div>
+          <div class="insight orange">
+            <strong>🟠 Sellers revendedores/consultores sem fluxo adequado <span class="case-count">3 casos</span></strong>
+            Consultores com terminal de cliente com falha — IA trata como seller comum, solução RMA não se aplica.
+            <div class="conv-ids">IDs: <span>be4fa211-c966-4b51-9429-555509d84aab</span><span>7e3bc86d-e230-4c92-8918-f52bbeca71fb</span><span>279788c6-d697-47c6-9f9c-28b4f3441d39</span></div>
+          </div>
+          <div class="insight yellow">
+            <strong>🟡 Compra por canais não-oficiais (Marketplace) <span class="case-count">~3 casos</span></strong>
+            IA não tem fluxo para sellers que compraram em Facebook Marketplace — sem garantia rastreável.
+            <div class="conv-ids">IDs: <span>be4fa211-c966-4b51-9429-555509d84aab</span><span>7e3bc86d-e230-4c92-8918-f52bbeca71fb</span><span>279788c6-d697-47c6-9f9c-28b4f3441d39</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sub-label" style="margin-top:20px;margin-bottom:10px">Quotes críticos — frustração com IA</div>
+      <div class="quote-block"><div class="meta">CSAT 1 — seller após RMA</div>"Mi terminal falla, ocupo cobrar y no puedo y no tengo tiempo de ir a dejarla. Por lo cual quedaré sin venta con tarjeta. [...] Gracias por el servicio que no ofrecen"</div>
+      <div class="quote-block"><div class="meta">CSAT 1 — seller com bateria ruim</div>"Tuve que descargar Tap to Pay porque mi mini no funciona. [...] Espero jamás necesitarte. Primero cambio de aplicación antes de necesitarte. No volver a escribir por favor."</div>
+      <div class="quote-block"><div class="meta">CSAT 1 — pós-CSAT</div>"Porque no da opciones. [...] Que negocio comprar otra si ya tengo una"</div>
+      <div class="quote-block"><div class="meta">CSAT 3 — reposição</div>"Solución al problema me lo dio, pero tengo que ir hasta una agencia para la devolución, eso significa tiempo y dinero. Hubiera preferido una recolección en mi hogar, dado que el problema no es mio."</div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- L2: SHIPMENTS & RETURNS -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div class="section-header">
+    <span style="font-size:22px">📦</span>
+    <h2>Shipments, deliveries &amp; returns</h2>
+    <span class="l2-badge" style="background:#FEE2E2;color:#991B1B">91 detratores · CSAT 63,9% · Gap −13,8 pp</span>
+  </div>
+
+  <!-- DORES -->
+  <div class="card">
+    <div class="card-title">Clusters de dores do usuário</div>
+    <div class="card-body">
+
+      <div class="insight red" style="margin-bottom:16px">
+        <strong>🔴 Achado inesperado: Rollos de papel é o maior driver (35%)</strong>
+        Esperava-se dores de entrega/logística como principal problema. Na prática, a solicitação de rollos de papel representa 1/3 dos detratores deste L2 — indicando possível problema de tipificação ou gap operacional grave em consumíveis.
+      </div>
+
+      <div class="cluster">
+        <div class="cluster-header" onclick="tog(this)">
+          <div class="cluster-dot" style="background:var(--red)"></div>
+          <div class="cluster-info">
+            <div class="name">Rollos de papel — sistema divergente / sem reposição</div>
+            <div class="desc">Sistema indica estoque disponível mas seller não recebe; IA não consegue enviar; seller tem que comprar</div>
+          </div>
+          <div class="cluster-right">
+            <div>
+              <div class="cluster-pct" style="color:var(--red)">35%</div>
+              <div class="cluster-count">~32 casos</div>
+            </div>
+            <div><div class="cluster-bar-wrap"><div class="cluster-bar-fill" style="width:35%;background:var(--red)"></div></div></div>
+          </div>
+          <div class="chevron">▾</div>
+        </div>
+        <div class="cluster-body open">
+          <p style="font-size:13px;color:var(--muted);margin-bottom:12px">IA verifica estoque no sistema — que mostra saldo disponível — mas seller afirma não ter rollos. Resultado: IA não envia rollos, seller tem que comprar por conta própria. Alguns sellers nunca receberam rollos em 1–2 anos de uso.</p>
+          <div class="sub-label">Trechos representativos</div>
+          <div class="quote-block"><div class="meta">CSAT 1</div>"Solicito rollos de papel para mi terminal. Revisé mi stock y solo tengo uno y está en mi máquina. Su asistente me determina a través de un stock que decide tener. [...] Hoy yo tengo que comprar los rollos para seguir cobrando y ¿a mi quién me recupera el pago de rollos?" (MXN $189 pagos pelo seller)</div>
+          <div class="quote-block"><div class="meta">CSAT 2</div>"Necesito solución con eso, no comprendo cómo me dicen que aún tengo y no sea así, entonces ¿me mintieron? Si se cómo revisarlo y ahora tendré que pagar por algo que deberían darme ustedes igual y la solución será cambiar de compañía de cobros"</div>
+          <div class="quote-block"><div class="meta">CSAT 3</div>"No me gustó, que siendo una empresa que vende la 'rapidez' y 'eficiencia' de envíos, se tenga que esperar 7 días hábiles en reponer rollos de impresión."</div>
+          <div class="quote-block"><div class="meta">CSAT 3</div>"El papel queda un poco grande. [...] Como le hago para que me cambien esos rollos ya que como no han bajado me quieren cobrar unos nuevos"</div>
+          <div class="quote-block"><div class="meta">CSAT 2</div>"Tengo aproximadamente 2 años y no me han mandado rollos y a mis colegas ya les han mandado, ¿me podrían ayudar?"</div>
+        </div>
+      </div>
+
+      <div class="cluster">
+        <div class="cluster-header" onclick="tog(this)">
+          <div class="cluster-dot" style="background:var(--orange)"></div>
+          <div class="cluster-info">
+            <div class="name">Cancelamento de compra pós-pagamento</div>
+            <div class="desc">Seller quer cancelar pedido de terminal já pago — IA não consegue executar</div>
+          </div>
+          <div class="cluster-right">
+            <div>
+              <div class="cluster-pct" style="color:var(--orange)">21%</div>
+              <div class="cluster-count">~19 casos</div>
+            </div>
+            <div><div class="cluster-bar-wrap"><div class="cluster-bar-fill" style="width:21%;background:var(--orange)"></div></div></div>
+          </div>
+          <div class="chevron">▾</div>
+        </div>
+        <div class="cluster-body">
+          <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Sellers pedem cancelamento de pedido de terminal (muitos no mesmo dia). IA não tem capacidade de cancelar pedidos processados — oferece apenas opções como "aguardar entrega e recusar" ou "ver na app", que não funcionam na prática.</p>
+          <div class="quote-block"><div class="meta">CSAT 1</div>"Solo cancelame la compra del mini componente. No sean rateros. [...] Solo hazlo y listo, es la peor de las cosas"</div>
+          <div class="quote-block"><div class="meta">CSAT 1</div>"Necesito que mi pedido llegue mañana [...] ¿Cómo la cancelo? No sirven esas opciones. [...] No resolvió nada"</div>
+        </div>
+      </div>
+
+      <div class="cluster">
+        <div class="cluster-header" onclick="tog(this)">
+          <div class="cluster-dot" style="background:var(--yellow)"></div>
+          <div class="cluster-info">
+            <div class="name">Endereço incorreto no pedido</div>
+            <div class="desc">Seller digitou endereço errado — IA só oferece "recusar entrega", inviável se for outro estado</div>
+          </div>
+          <div class="cluster-right">
+            <div>
+              <div class="cluster-pct" style="color:var(--yellow)">10%</div>
+              <div class="cluster-count">~9 casos</div>
+            </div>
+            <div><div class="cluster-bar-wrap"><div class="cluster-bar-fill" style="width:10%;background:var(--yellow)"></div></div></div>
+          </div>
+          <div class="chevron">▾</div>
+        </div>
+        <div class="cluster-body">
+          <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Sellers colocaram endereço errado no momento da compra. IA não consegue alterar após processamento. Solução oferecida ("recusar entrega") é inviável quando o pedido está indo para outro estado.</p>
+          <div class="quote-block"><div class="meta">CSAT 1</div>"¿Cómo la voy a rechazar si está en otro estado? La dirección es de otro estado, no está aquí en Puebla. ¿Cómo voy a saber que llegó? ¿Cómo voy a saber que la persona la va a rechazar y no se la va a quedar? [...] No puedo creer que una empresa tan grande no pueda corregir un error pequeño. Repiten ustedes siempre lo mismo y no veo soluciones."</div>
+        </div>
+      </div>
+
+      <div class="cluster">
+        <div class="cluster-header" onclick="tog(this)">
+          <div class="cluster-dot" style="background:var(--blue)"></div>
+          <div class="cluster-info">
+            <div class="name">Rastreio indisponível / status desatualizado</div>
+            <div class="desc">Número de rastreio não aparece na app; status não atualiza após tentativa de entrega</div>
+          </div>
+          <div class="cluster-right">
+            <div>
+              <div class="cluster-pct" style="color:var(--blue)">5%</div>
+              <div class="cluster-count">~5 casos</div>
+            </div>
+            <div><div class="cluster-bar-wrap"><div class="cluster-bar-fill" style="width:5%;background:var(--blue)"></div></div></div>
+          </div>
+          <div class="chevron">▾</div>
+        </div>
+        <div class="cluster-body">
+          <div class="quote-block"><div class="meta">CSAT 1</div>"Las opciones que me dio no fueron suficientes, y la aplicación no muestra algunas de las opciones que el asistente mencionó. [...] El problema es que tú no me puedes decir dónde está mi Point Smart 2"</div>
+          <div class="quote-block"><div class="meta">CSAT 1</div>"Entre las opciones jamás encontré la manera de explicar mi problema. La entrega de mi terminal estaba programada para hoy y tenía que recibir una llamada de confirmación. Nunca recibí la llamada y solo me llegó el mensaje de que no entregaron mi terminal."</div>
+        </div>
+      </div>
+
+      <div class="cluster">
+        <div class="cluster-header" onclick="tog(this)">
+          <div class="cluster-dot" style="background:#9CA3AF"></div>
+          <div class="cluster-info">
+            <div class="name">Não entregue / entregue em local errado / etiqueta devolução</div>
+            <div class="desc">Pacote descartado pela transportadora, não entregue sem justificativa, etiqueta RMA inacessível</div>
+          </div>
+          <div class="cluster-right">
+            <div>
+              <div class="cluster-pct" style="color:#9CA3AF">8%</div>
+              <div class="cluster-count">~7 casos</div>
+            </div>
+            <div><div class="cluster-bar-wrap"><div class="cluster-bar-fill" style="width:8%;background:#9CA3AF"></div></div></div>
+          </div>
+          <div class="chevron">▾</div>
+        </div>
+        <div class="cluster-body">
+          <div class="quote-block"><div class="meta">CSAT 1</div>"El paquete lo aventaron a la basura sin mi consentimiento. Nadie me da respuesta para la devolución, todos me dicen que sigue en tránsito pero no es así. [...] Mándalo pues."</div>
+          <div class="quote-block"><div class="meta">CSAT 2</div>"No puedo descargar la etiqueta [de devolución]. Ya recibí la nueva terminal y debo devolver esta pero no puedo descargar la etiqueta."</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SOLUÇÕES IA SHIPMENTS -->
+  <div class="card">
+    <div class="card-title">Soluções indicadas pela IA e fricções identificadas</div>
+    <div class="card-body">
+      <div class="two-col">
+        <div>
+          <div class="sub-label" style="margin-bottom:10px">Padrão de atendimento da IA (inferido)</div>
+          <div class="insight blue">
+            <strong>Rollos: verifica estoque no sistema → informa % disponível <span class="case-count">32 casos</span></strong>
+            IA consulta saldo de rollos no cadastro do seller. Quando sistema indica estoque (mesmo que incorreto), não envia novos rollos. Divergência sistema ↔ realidade sem tratamento.
+            <div class="conv-ids">IDs: <span>039b0bcf-4e9d-4c26-8a12-1b91d56adc91</span><span>57215179-f9da-40d6-8a72-423b524a9a09</span><span>b6e0e0ea-ec97-4bb7-8d5e-be3be537eb76</span><span>94a59dcd-7109-4437-a149-af67e485878c</span><span>813a9098-dfda-462e-b399-f877c429d2d9</span></div>
+          </div>
+          <div class="insight blue">
+            <strong>Cancelamento / endereço: redireciona para "ver na app" <span class="case-count">5 casos</span></strong>
+            IA instrui seller a acessar seção da app — mas opções mencionadas não aparecem na prática.
+            <div class="conv-ids">IDs: <span>df88fa5d-f10d-4851-9e87-4f3d2ec03402</span><span>3af42e2a-1f90-4367-9eef-f8e3413a13d6</span><span>e5234a15-035c-451f-93d4-227f0b74a0cc</span><span>d15d47c4-8f40-4bb8-9c61-0e93a10f769a</span><span>8a845138-a2ac-4bb0-a3cf-e65e35ef9eba</span></div>
+          </div>
+          <div class="insight blue">
+            <strong>Não entregue: "aguardar prazo" ou "recusar entrega" <span class="case-count">5 casos aguardar · 1 recusar</span></strong>
+            IA orienta aguardar reentrega ou recusar o pacote — inviável quando pedido está em outro estado.
+            <div class="conv-ids">IDs aguardar: <span>347ee2c8-d3ce-4694-8f46-763aaf805f7d</span><span>bead1af1-c35d-40d2-a9d2-c6949c320602</span><span>2dda9d7a-631d-43ad-8dd6-7a62d374516e</span><span>2a4d1fdf-3df3-40d6-b83b-5da13eccf51e</span><span>cff1e156-cebd-4fae-aeed-9265f87e0806</span></div>
+          </div>
+          <div class="insight blue">
+            <strong>IA reconhece limitação ("no es posible") sem escalonamento <span class="case-count">9 casos</span></strong>
+            IA admite que não pode resolver mas não oferece alternativa eficaz — seller fica sem saída.
+            <div class="conv-ids">IDs: <span>5ace61ff-45c3-4950-a7fb-4616e0cacf11</span><span>6703e874-a542-497f-83bf-b8519c79a67a</span><span>02185db4-e2d4-4dd2-a446-4dc08f8eb3fe</span><span>2a4d1fdf-3df3-40d6-b83b-5da13eccf51e</span><span>ec7ae00b-071c-4cbe-b83a-b3a5f3262cb6</span></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="sub-label" style="margin-bottom:10px">Fricções críticas</div>
+          <div class="insight red">
+            <strong>🔴 Sistema de estoque de rollos desatualizado — IA bloqueia envio <span class="case-count">32 casos</span></strong>
+            Sistema informa estoque que não condiz com a realidade. IA bloqueia envio gratuito; seller precisa comprar por conta própria (~MXN $189). Alguns sem reposição há 2 anos.
+            <div class="conv-ids">IDs: <span>039b0bcf-4e9d-4c26-8a12-1b91d56adc91</span><span>57215179-f9da-40d6-8a72-423b524a9a09</span><span>b6e0e0ea-ec97-4bb7-8d5e-be3be537eb76</span><span>94a59dcd-7109-4437-a149-af67e485878c</span><span>813a9098-dfda-462e-b399-f877c429d2d9</span></div>
+          </div>
+          <div class="insight red">
+            <strong>🔴 IA não executa ações transacionais — sem escalonamento <span class="case-count">19 cancelamento · 9 limitação reconhecida</span></strong>
+            Cancelamento, mudança de endereço, envio de consumíveis — IA reconhece que não pode resolver mas não tem saída alternativa eficaz.
+            <div class="conv-ids">IDs cancelamento: <span>347ee2c8-d3ce-4694-8f46-763aaf805f7d</span><span>1d40a8f9-a4da-4834-96cd-a70f1074b94d</span><span>3af42e2a-1f90-4367-9eef-f8e3413a13d6</span><span>6703e874-a542-497f-83bf-b8519c79a67a</span><span>f8a6c81d-bf0e-4d91-a7a1-4e912680d01e</span><br>IDs limitação: <span>5ace61ff-45c3-4950-a7fb-4616e0cacf11</span><span>6703e874-a542-497f-83bf-b8519c79a67a</span><span>02185db4-e2d4-4dd2-a446-4dc08f8eb3fe</span><span>2a4d1fdf-3df3-40d6-b83b-5da13eccf51e</span><span>ec7ae00b-071c-4cbe-b83a-b3a5f3262cb6</span></div>
+          </div>
+          <div class="insight orange">
+            <strong>🟠 Gap app ↔ IA: opções mencionadas não existem na app <span class="case-count">6 casos</span></strong>
+            Seller percorre caminho sem saída seguindo instruções da IA que apontam para seções inexistentes.
+            <div class="conv-ids">IDs: <span>3af42e2a-1f90-4367-9eef-f8e3413a13d6</span><span>e5234a15-035c-451f-93d4-227f0b74a0cc</span><span>d8d7ce25-2674-45e9-b70c-84b1d430be5c</span><span>f015bc51-e726-4544-8bae-402b42249531</span><span>d15d47c4-8f40-4bb8-9c61-0e93a10f769a</span></div>
+          </div>
+          <div class="insight yellow">
+            <strong>🟡 SLA de 7 dias úteis para reposição de rollos <span class="case-count">1 caso explícito</span></strong>
+            Prazo incompatível com operação diária — seller para de emitir comprovantes enquanto aguarda.
+            <div class="conv-ids">IDs: <span>2dda9d7a-631d-43ad-8dd6-7a62d374516e</span></div>
+          </div>
+          <div class="insight yellow">
+            <strong>🟡 "Recusar entrega" inviável para endereço em outro estado <span class="case-count">1 caso explícito</span></strong>
+            Solução proposta pela IA é impossível quando o pacote já está indo para um estado diferente do seller.
+            <div class="conv-ids">IDs: <span>cff1e156-cebd-4fae-aeed-9265f87e0806</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sub-label" style="margin-top:20px;margin-bottom:10px">Quotes críticos — frustração com IA</div>
+      <div class="quote-block"><div class="meta">CSAT 1 — endereço errado</div>"Repiten ustedes siempre lo mismo y lo mismo y lo mismo y no veo soluciones. [...] Entonces ya déjalo así, quédense con el paquete con el dinero. Te decepciona esta empresa."</div>
+      <div class="quote-block"><div class="meta">CSAT 3 — logística</div>"Pésima logística. [...] No entiendo cuál es su logística de entrega. Después de eso como les mencioné lo llevan a un punto donde me queda muy lejos."</div>
+      <div class="quote-block"><div class="meta">CSAT 1 — rollos</div>"Hoy que te pido no puedes. [...] Nunca te he pedido nada." / "¿A mi quién me recupera el pago de rollos?"</div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- L2: PAYMENT ACCEPTANCE & USAGE -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div class="section-header">
+    <span style="font-size:22px">💳</span>
+    <h2>Payment acceptance &amp; usage</h2>
+    <span class="l2-badge" style="background:#FED7AA;color:#9A3412">148 detratores · CSAT 68,9% · Gap canal ~0 pp</span>
+  </div>
+
+  <!-- DORES -->
+  <div class="card">
+    <div class="card-title">Clusters de dores do usuário</div>
+    <div class="card-body">
+
+      <div class="cluster">
+        <div class="cluster-header" onclick="tog(this)">
+          <div class="cluster-dot" style="background:var(--red)"></div>
+          <div class="cluster-info">
+            <div class="name">Cobro rechazado / no avanza</div>
+            <div class="desc">Seller tenta cobrar, sistema rejeita com mensagem "no superó controles de seguridad". Cobro não avança após digitar valor</div>
+          </div>
+          <div class="cluster-right">
+            <div>
+              <div class="cluster-pct" style="color:var(--red)">71%</div>
+              <div class="cluster-count">~55 casos</div>
+            </div>
+            <div><div class="cluster-bar-wrap"><div class="cluster-bar-fill" style="width:71%;background:var(--red)"></div></div></div>
+          </div>
+          <div class="chevron">▾</div>
+        </div>
+        <div class="cluster-body open">
+          <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Principal driver de insatisfação. Seller digita valor, transação é rejeitada pelo sistema de segurança do Mercado Pago. A IA explica que são controles de segurança, orienta verificar método ou cartão, mas não consegue aprovar o cobro manualmente nem identificar a causa específica da rejeição.</p>
+          <div class="sub-label">Trechos representativos</div>
+          <div class="quote-block"><div class="meta">CSAT 1</div>"Me rechazaron un cobro. Y en la aplicación del banco aparece que se cobró"</div>
+          <div class="quote-block"><div class="meta">CSAT 1</div>"Tengo una duda: en la publicidad de la terminal Point decía que la cantidad de cobro se veía al instante"</div>
+          <div class="conv-ids">IDs representativos: <span>44f80efc-3996-4a71-953f-d4bb234246ac</span><span>9c21de77-a91f-4bbe-8371-b545069a4afc</span><span>58eb9202-fcd0-43a6-8aa8-36deddc35135</span><span>80870daf-f743-4810-959e-e2c85c62bf09</span><span>e1488498-7db2-4520-8fae-1e6da0b8ab80</span></div>
+        </div>
+      </div>
+
+      <div class="cluster">
+        <div class="cluster-header" onclick="tog(this)">
+          <div class="cluster-dot" style="background:var(--orange)"></div>
+          <div class="cluster-info">
+            <div class="name">Restrição / bloqueio de conta</div>
+            <div class="desc">Conta do seller está restrita, impedindo a realização de cobranças via terminal</div>
+          </div>
+          <div class="cluster-right">
+            <div>
+              <div class="cluster-pct" style="color:var(--orange)">13%</div>
+              <div class="cluster-count">~10 casos</div>
+            </div>
+            <div><div class="cluster-bar-wrap"><div class="cluster-bar-fill" style="width:13%;background:var(--orange)"></div></div></div>
+          </div>
+          <div class="chevron">▾</div>
+        </div>
+        <div class="cluster-body">
+          <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Conta restrita impede a realização de cobranças. A IA informa o tipo de restrição e orienta resolver via app, mas não consegue remover a restrição nem oferecer alternativa imediata para o seller cobrar.</p>
+          <div class="conv-ids">IDs: <span>2c1183d7-77f6-49db-b478-35e6ecfb36ad</span><span>93966944-0217-43c1-af44-e30d83e652d7</span><span>3dbdb769-bbdb-4732-af38-f6b7aae70da5</span><span>c99f6d65-06d2-4545-bd40-74d498692e18</span><span>1348bdf8-d17a-484f-8127-479f59ebbe8f</span></div>
+        </div>
+      </div>
+
+      <div class="cluster">
+        <div class="cluster-header" onclick="tog(this)">
+          <div class="cluster-dot" style="background:var(--yellow)"></div>
+          <div class="cluster-info">
+            <div class="name">Métodos / tarjetas no disponibles</div>
+            <div class="desc">Método de pagamento não disponível: Tap to Pay no iPhone, recarga BAIT, cartão específico não aceito</div>
+          </div>
+          <div class="cluster-right">
+            <div>
+              <div class="cluster-pct" style="color:var(--yellow)">12%</div>
+              <div class="cluster-count">~9 casos</div>
+            </div>
+            <div><div class="cluster-bar-wrap"><div class="cluster-bar-fill" style="width:12%;background:var(--yellow)"></div></div></div>
+          </div>
+          <div class="chevron">▾</div>
+        </div>
+        <div class="cluster-body">
+          <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Seller espera funcionalidade que não está disponível no produto (Tap to Pay em iPhone, recarga de operadora específica, método não suportado). A IA informa a disponibilidade e orienta alternativas, mas o gap entre expectativa gerada pela publicidade e a realidade do produto gera frustração.</p>
+          <div class="quote-block"><div class="meta">CSAT 1</div>"Por qué no me aparece la opción tap to pay en mi iPhone"</div>
+          <div class="quote-block"><div class="meta">CSAT 2</div>"¿Cómo puedo recargar celular de la compañía BAIT en la terminal?"</div>
+          <div class="conv-ids">IDs: <span>12426167-3f53-4a6f-945d-bc77f19f76a3</span><span>2818210b-3ea2-45db-94c3-3788d957d79b</span><span>929d9deb-d845-45c6-8744-169f00e14561</span><span>8fbb28dd-f1c6-41f0-a75d-5e976eea641d</span><span>4b9d2393-c8a0-44c0-984f-ea0dcbde752a</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SOLUÇÕES IA PAYMENT -->
+  <div class="card">
+    <div class="card-title">Soluções indicadas pela IA e fricções identificadas</div>
+    <div class="card-body">
+
+      <div class="insight orange">
+        <strong>⚠️ Diagnóstico central: gap canal ~0 pp — problema de produto, não de atendimento</strong>
+        MXW CSAT 68,9% vs CS NPS 69,9% — ambos os canais performam de forma idêntica. Mesmo o CS humano, com acesso ao sistema e histórico de transações, não consegue reverter cobros rejeitados. A raiz está nas políticas de aprovação e controles de segurança do Mercado Pago, não na qualidade do atendimento.
+      </div>
+
+      <div class="two-col" style="margin-top:16px">
+        <div>
+          <div class="sub-label" style="margin-bottom:10px">Padrão de atendimento da IA (inferido)</div>
+          <div class="insight blue">
+            <strong>1. Verifica incidência geral no sistema</strong>
+            IA consulta se há falha geral afetando cobros → informa que não há incidência sistêmica. Seller entende que o problema é isolado (conta/cartão).
+            <div class="conv-ids">IDs: <span>44f80efc-3996-4a71-953f-d4bb234246ac</span><span>9c21de77-a91f-4bbe-8371-b545069a4afc</span><span>58eb9202-fcd0-43a6-8aa8-36deddc35135</span></div>
+          </div>
+          <div class="insight blue">
+            <strong>2. Para cobro rechazado: explica "controles de seguridad" e orienta trocar método/cartão</strong>
+            IA explica que a rejeição é resultado dos controles de segurança do sistema, orienta tentar com outro método de pagamento ou outra tarjeta. Não consegue identificar o motivo exato nem aprovar manualmente.
+            <div class="conv-ids">IDs: <span>80870daf-f743-4810-959e-e2c85c62bf09</span><span>e1488498-7db2-4520-8fae-1e6da0b8ab80</span><span>44f80efc-3996-4a71-953f-d4bb234246ac</span></div>
+          </div>
+          <div class="insight blue">
+            <strong>3. Para restrições: informa tipo e orienta resolver via app</strong>
+            IA identifica que há restrição na conta e orienta o seller a acessar o app Mercado Pago para verificar o status. Sem resolução no chat.
+            <div class="conv-ids">IDs: <span>2c1183d7-77f6-49db-b478-35e6ecfb36ad</span><span>93966944-0217-43c1-af44-e30d83e652d7</span><span>3dbdb769-bbdb-4732-af38-f6b7aae70da5</span></div>
+          </div>
+          <div class="insight blue">
+            <strong>4. Para métodos não disponíveis: informa disponibilidade e orienta alternativas</strong>
+            IA confirma que o método não está disponível (ex: Tap to Pay não suportado no iPhone, BAIT não coberta) e sugere alternativas como Bluetooth ou outros canais.
+            <div class="conv-ids">IDs: <span>12426167-3f53-4a6f-945d-bc77f19f76a3</span><span>2818210b-3ea2-45db-94c3-3788d957d79b</span><span>929d9deb-d845-45c6-8744-169f00e14561</span></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="sub-label" style="margin-bottom:10px">Fricções críticas identificadas nas transcrições</div>
+          <div class="insight red">
+            <strong>🔴 IA não consegue aprovar cobro manualmente <span class="case-count">55+ casos</span></strong>
+            Principal fricção. Seller aguarda resolução — IA só explica mas não tem ação disponível para desbloquear o cobro. Resultado: seller perde venda.
+            <div class="conv-ids">IDs: <span>44f80efc-3996-4a71-953f-d4bb234246ac</span><span>9c21de77-a91f-4bbe-8371-b545069a4afc</span><span>58eb9202-fcd0-43a6-8aa8-36deddc35135</span><span>80870daf-f743-4810-959e-e2c85c62bf09</span><span>e1488498-7db2-4520-8fae-1e6da0b8ab80</span></div>
+          </div>
+          <div class="insight red">
+            <strong>🔴 Resposta genérica sem diagnóstico específico do cobro <span class="case-count">55+ casos</span></strong>
+            CS humano lê o histórico de transações e dá diagnóstico específico ("vi rechazos: $X às Yh com visa crédito"). MXW dá resposta genérica sobre controles de segurança — sem identificar se é problema do método, do valor ou do perfil do comprador.
+            <div class="conv-ids">IDs: <span>44f80efc-3996-4a71-953f-d4bb234246ac</span><span>9c21de77-a91f-4bbe-8371-b545069a4afc</span></div>
+          </div>
+          <div class="insight orange">
+            <strong>🟠 Gap entre expectativa de produto e realidade <span class="case-count">9 casos</span></strong>
+            Publicidade/marketing cria expectativa de funcionalidades (Tap to Pay no iPhone, recargas de operadoras) que não estão disponíveis no produto. A IA não pode resolver — é limitação de produto.
+            <div class="conv-ids">IDs: <span>12426167-3f53-4a6f-945d-bc77f19f76a3</span><span>2818210b-3ea2-45db-94c3-3788d957d79b</span><span>929d9deb-d845-45c6-8744-169f00e14561</span><span>8fbb28dd-f1c6-41f0-a75d-5e976eea641d</span><span>4b9d2393-c8a0-44c0-984f-ea0dcbde752a</span></div>
+          </div>
+          <div class="insight orange">
+            <strong>🟠 Restrição de conta sem resolução no chat <span class="case-count">10 casos</span></strong>
+            Seller restrito não pode cobrar e a única orientação é "verifique no app" — sem prazo, sem escalamento, sem alternativa imediata.
+            <div class="conv-ids">IDs: <span>2c1183d7-77f6-49db-b478-35e6ecfb36ad</span><span>93966944-0217-43c1-af44-e30d83e652d7</span><span>c99f6d65-06d2-4545-bd40-74d498692e18</span><span>1348bdf8-d17a-484f-8127-479f59ebbe8f</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sub-label" style="margin-top:20px;margin-bottom:10px">Quotes críticos — frustração com IA</div>
+      <div class="quote-block"><div class="meta">CSAT 1 — cobro rechazado</div>"Me rechazaron un cobro. Y en la aplicación del banco aparece que se cobró"</div>
+      <div class="quote-block"><div class="meta">CSAT 1 — expectativa vs produto</div>"Tengo una duda: en la publicidad de la terminal Point decía que la cantidad de cobro se veía al instante"</div>
+      <div class="quote-block"><div class="meta">CSAT 1 — Tap to Pay</div>"Por qué no me aparece la opción tap to pay en mi iPhone"</div>
+      <div class="quote-block"><div class="meta">CSAT 2 — recarga BAIT</div>"¿Cómo puedo recargar celular de la compañía BAIT en la terminal?"</div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- PLANO DE AÇÃO -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div class="section-header">
+    <span style="font-size:22px">🎯</span>
+    <h2>Plano de ação priorizado</h2>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <table class="action-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Ação</th>
+            <th>L2</th>
+            <th>Esforço</th>
+            <th>Impacto</th>
+            <th>Direcionamento</th>
+            <th>Prazo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>1</strong></td>
+            <td><strong>Corrigir sincronização de estoque de rollos</strong><br><span style="color:var(--muted);font-size:12px">Sistema mostra saldo que não condiz com realidade → IA bloqueia envio indevidamente. Corrigir fonte de dados ou permitir override manual</span></td>
+            <td>Shipments</td>
+            <td>Médio</td>
+            <td>Alto</td>
+            <td><span class="pill prod">Produto/Sistema</span></td>
+            <td><span class="pill mp">Médio Prazo</span></td>
+          </tr>
+          <tr>
+            <td><strong>2</strong></td>
+            <td><strong>Habilitar coleta em domicílio para RMA (Point)</strong><br><span style="color:var(--muted);font-size:12px">Maior causa de abandono pós-atendimento em Hardware. Seller não tem como levar ao DHL. Coleta agendada eliminaria a principal fricção</span></td>
+            <td>Hardware</td>
+            <td>Alto</td>
+            <td>Alto</td>
+            <td><span class="pill pol">Política/Produto</span></td>
+            <td><span class="pill est">Estrutural</span></td>
+          </tr>
+          <tr>
+            <td><strong>3</strong></td>
+            <td><strong>Eliminar triage de "2h" quando seller já fez tentativa equivalente</strong><br><span style="color:var(--muted);font-size:12px">IA deve perguntar se já tentou carregar por mais de X horas antes de aplicar o passo de 2h. Se já tentou, ir direto ao RMA</span></td>
+            <td>Hardware</td>
+            <td>Baixo</td>
+            <td>Médio</td>
+            <td><span class="pill prod">Produto MXW</span></td>
+            <td><span class="pill qw">Quick Win</span></td>
+          </tr>
+          <tr>
+            <td><strong>4</strong></td>
+            <td><strong>Reduzir SLA de reposição de rollos para ≤ 2 dias úteis</strong><br><span style="color:var(--muted);font-size:12px">7 dias hábeis é incompatível com operação diária. Seller para de cobrar recibos impressos sem rollos</span></td>
+            <td>Shipments</td>
+            <td>Médio</td>
+            <td>Alto</td>
+            <td><span class="pill pol">Política Logística</span></td>
+            <td><span class="pill mp">Médio Prazo</span></td>
+          </tr>
+          <tr>
+            <td><strong>5</strong></td>
+            <td><strong>Adicionar fluxo de escalonamento para cancelamento e mudança de endereço</strong><br><span style="color:var(--muted);font-size:12px">IA reconhece que não pode resolver mas não tem saída. Criar fluxo de escalonamento para CS humano com prazo de resposta definido</span></td>
+            <td>Shipments</td>
+            <td>Médio</td>
+            <td>Alto</td>
+            <td><span class="pill op">Operação CX</span></td>
+            <td><span class="pill mp">Médio Prazo</span></td>
+          </tr>
+          <tr>
+            <td><strong>6</strong></td>
+            <td><strong>Corrigir gap app ↔ IA: opções mencionadas devem existir na app</strong><br><span style="color:var(--muted);font-size:12px">IA instrui seller a acessar seção que não existe ou não está visível — dupla frustração. Alinhar conteúdo da IA com o estado real da app</span></td>
+            <td>Shipments</td>
+            <td>Médio</td>
+            <td>Médio</td>
+            <td><span class="pill prod">Produto App</span></td>
+            <td><span class="pill mp">Médio Prazo</span></td>
+          </tr>
+          <tr>
+            <td><strong>7</strong></td>
+            <td><strong>Adicionar fluxo para revendedores/consultores com terminal de cliente com defeito</strong><br><span style="color:var(--muted);font-size:12px">IA trata consultor como seller — fluxo RMA não se aplica. Criar variante do fluxo para esse perfil</span></td>
+            <td>Hardware</td>
+            <td>Médio</td>
+            <td>Médio</td>
+            <td><span class="pill prod">Produto MXW</span></td>
+            <td><span class="pill mp">Médio Prazo</span></td>
+          </tr>
+          <tr>
+            <td><strong>8</strong></td>
+            <td><strong>Substituir encerramento "buscarás otras opciones" por escalonamento</strong><br><span style="color:var(--muted);font-size:12px">Quando IA não tem mais opções, encerra com frase que equivale a abandono. Substituir por oferta de contato humano ou ticket de acompanhamento</span></td>
+            <td>Hardware</td>
+            <td>Baixo</td>
+            <td>Médio</td>
+            <td><span class="pill prod">Produto MXW</span></td>
+            <td><span class="pill qw">Quick Win</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+
+  </div>
+</div>
+
+
+<div id="tab-analitica" class="tab-panel">
+  <div class="main">
+
+    <!-- EXEC SUMMARY -->
+    <div class="exec-box">
+      <h2>Resumo executivo — Point MLM · Maxwell · Jan–Mar 2026</h2>
+      <div class="tp-grid">
+        <div class="tp-item">
+          <div class="tp-num">1</div>
+          <div class="tp-body">
+            <div class="tp-hl">4.584 conversas · CSAT 77,7%</div>
+            <div class="tp-detail">3 L2s abaixo da média — Shipments (63,9%), Reconciliation (68,3%) e Payment (68,9%) — concentram 419 detratores juntos.</div>
+          </div>
+        </div>
+        <div class="tp-item">
+          <div class="tp-num">2</div>
+          <div class="tp-body">
+            <div class="tp-hl">Hardware: 53% das encuestas, 9,1 pp de gap</div>
+            <div class="tp-detail">Maior volume absoluto de detratores (418 casos). CSAT de 82,7% mascara o impacto — é o L2 mais urgente em termos absolutos.</div>
+          </div>
+        </div>
+        <div class="tp-item">
+          <div class="tp-num">3</div>
+          <div class="tp-body">
+            <div class="tp-hl">Shipments: pior CSAT do portfolio (63,9%)</div>
+            <div class="tp-detail">35% dos detratores reclamam de falta de rollos de papel — possível mis-tipificação ou gap grave em estoque de consumíveis.</div>
+          </div>
+        </div>
+        <div class="tp-item">
+          <div class="tp-num">4</div>
+          <div class="tp-body">
+            <div class="tp-hl">IA encerra sem escalamento</div>
+            <div class="tp-detail">Flows estruturados repetem triage já tentada e encerram com "buscarás otras opciones de cobro" — abandono explícito sem oferta de alternativa.</div>
+          </div>
+        </div>
+        <div class="tp-item full">
+          <div class="tp-num">5</div>
+          <div class="tp-body">
+            <div class="tp-hl">RMA presencial obrigatório = principal fricção de Hardware</div>
+            <div class="tp-detail">Sellers com urgência operacional não conseguem ir ao DHL/agência e migram para concorrentes (Tap to Pay, Clip). CS resolve o mesmo tema com NPS de 87,5% — gap de canal de ~13 pp — confirmando que a dor é do processo, não do produto.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VOLUME CARDS -->
+    <div class="section-title-cd">Volumes — Point | MLM | Jan–Mar 2026</div>
+    <div class="section-desc-cd">Atendimento via Maxwell (AI_CONVERSATION) · Sellers · Fintech / Point</div>
+    <div class="summary-row">
+      <div class="stat-card">
+        <div class="label">Maxwell · Total conversas</div>
+        <div class="value" style="color:#009EE3">4.584</div>
+        <div class="sub">Com encuesta respondida</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">CSAT médio Point MLM</div>
+        <div class="value" style="color:#10B981">77,7%</div>
+        <div class="sub">% promotores (CSAT 4–5)</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Total detratores</div>
+        <div class="value" style="color:#EF4444">1.024</div>
+        <div class="sub">CSAT 1–3 · 22,3% de detração</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Pior L2 (CSAT)</div>
+        <div class="value" style="font-size:20px;color:#EF4444">63,9%</div>
+        <div class="sub">Shipments &amp; Returns</div>
+      </div>
+    </div>
+
+    <!-- METRIC NOTE -->
+    <div class="metric-note-cd">
+      <strong>Nota metodológica:</strong> Análise exclusivamente MXW (AI_CONVERSATION). CSAT = % promotores (notas 4–5) sobre pesquisas respondidas pós-conversa. Expansão de volume aplicada a Classification IDs 6–7 anteriores a 06/03/2026 (peso 1/0,3 = 3,33×). Período: Jan–Mar 2026 · MLM · Sellers · Fintech / Point.
+    </div>
+
+    <!-- CHART CSAT POR L2 -->
+    <div class="section-title-cd">CSAT Maxwell por L2 — todos com ≥49 encuestas</div>
+    <div class="section-desc-cd">% promotores (notas 4–5). Linha amarela = CSAT total Point MLM (77,7%). Linha vermelha = threshold de risco (65%).</div>
+    <div class="chart-wrap">
+      <div class="chart-title">CSAT por L2 · Point MLM · Maxwell</div>
+      <div class="chart-subtitle">Barras ordenadas do pior (esq.) ao melhor (dir.). Volume por L2 entre 49 e 2.424 conversas.</div>
+      <div class="chart-inner" style="height:290px"><canvas id="chartPointL2"></canvas></div>
+    </div>
+
+    <!-- TOP PROBLEMÁTICAS -->
+    <div class="section-title-cd">Top problemáticas — Ranking por impacto</div>
+    <div class="section-desc-cd">Ordenado por detratores absolutos (volume × taxa de detração) — maior impacto no CSAT total do Point MLM.</div>
+    <div class="chart-wrap" style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead>
+          <tr style="border-bottom:2px solid var(--border)">
+            <th style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:8px 10px;text-align:left">#</th>
+            <th style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:8px 10px;text-align:left">L2</th>
+            <th style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:8px 10px;text-align:right">Encuestas</th>
+            <th style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:8px 10px;text-align:right">Detratores</th>
+            <th style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:8px 10px;text-align:right">% Detração</th>
+            <th style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:8px 10px;text-align:right">CSAT L2</th>
+            <th style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:8px 10px">Gap CSAT ↓</th>
+            <th style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:8px 10px">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:9px 10px"><strong>1</strong></td>
+            <td style="padding:9px 10px"><strong>Hardware faults &amp; RMA</strong></td>
+            <td style="padding:9px 10px;text-align:right">2.424</td>
+            <td style="padding:9px 10px;text-align:right"><strong>418</strong></td>
+            <td style="padding:9px 10px;text-align:right">17,3%</td>
+            <td style="padding:9px 10px;text-align:right"><span class="csat-ok-cd">82,7%</span></td>
+            <td style="padding:9px 10px"><span class="gap-badge gap-h">9,1 pp</span></td>
+            <td style="padding:9px 10px"><span style="font-size:11px;background:#FEE2E2;color:#991B1B;padding:2px 8px;border-radius:10px;font-weight:700">Volume crítico</span></td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:9px 10px"><strong>2</strong></td>
+            <td style="padding:9px 10px"><strong>Shipments &amp; Returns</strong></td>
+            <td style="padding:9px 10px;text-align:right">471</td>
+            <td style="padding:9px 10px;text-align:right"><strong>170</strong></td>
+            <td style="padding:9px 10px;text-align:right">36,1%</td>
+            <td style="padding:9px 10px;text-align:right"><span class="csat-bad-cd">63,9%</span></td>
+            <td style="padding:9px 10px"><span class="gap-badge gap-h">3,7 pp</span></td>
+            <td style="padding:9px 10px"><span style="font-size:11px;background:#FEE2E2;color:#991B1B;padding:2px 8px;border-radius:10px;font-weight:700">Taxa crítica</span></td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:9px 10px"><strong>3</strong></td>
+            <td style="padding:9px 10px"><strong>Payment acceptance &amp; usage</strong></td>
+            <td style="padding:9px 10px;text-align:right">476</td>
+            <td style="padding:9px 10px;text-align:right"><strong>148</strong></td>
+            <td style="padding:9px 10px;text-align:right">31,1%</td>
+            <td style="padding:9px 10px;text-align:right"><span class="csat-bad-cd">68,9%</span></td>
+            <td style="padding:9px 10px"><span class="gap-badge gap-m">3,2 pp</span></td>
+            <td style="padding:9px 10px"><span style="font-size:11px;background:#FEF3C7;color:#92400E;padding:2px 8px;border-radius:10px;font-weight:700">Sem análise</span></td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:9px 10px"><strong>4</strong></td>
+            <td style="padding:9px 10px">Account &amp; entitlement mgmt</td>
+            <td style="padding:9px 10px;text-align:right">499</td>
+            <td style="padding:9px 10px;text-align:right">103</td>
+            <td style="padding:9px 10px;text-align:right">20,6%</td>
+            <td style="padding:9px 10px;text-align:right"><span class="csat-warn-cd">79,4%</span></td>
+            <td style="padding:9px 10px"><span class="gap-badge gap-m">2,2 pp</span></td>
+            <td style="padding:9px 10px"><span style="font-size:11px;background:#F3F4F6;color:#6B7280;padding:2px 8px;border-radius:10px;font-weight:700">Sem análise</span></td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:9px 10px"><strong>5</strong></td>
+            <td style="padding:9px 10px">Reconciliation &amp; refunds</td>
+            <td style="padding:9px 10px;text-align:right">320</td>
+            <td style="padding:9px 10px;text-align:right">101</td>
+            <td style="padding:9px 10px;text-align:right">31,7%</td>
+            <td style="padding:9px 10px;text-align:right"><span class="csat-bad-cd">68,3%</span></td>
+            <td style="padding:9px 10px"><span class="gap-badge gap-m">2,2 pp</span></td>
+            <td style="padding:9px 10px"><span style="font-size:11px;background:#F3F4F6;color:#6B7280;padding:2px 8px;border-radius:10px;font-weight:700">Sem análise</span></td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:9px 10px"><strong>6</strong></td>
+            <td style="padding:9px 10px">Cellular/SIM connectivity</td>
+            <td style="padding:9px 10px;text-align:right">345</td>
+            <td style="padding:9px 10px;text-align:right">70</td>
+            <td style="padding:9px 10px;text-align:right">20,4%</td>
+            <td style="padding:9px 10px;text-align:right"><span class="csat-warn-cd">79,6%</span></td>
+            <td style="padding:9px 10px"><span class="gap-badge gap-l">1,5 pp</span></td>
+            <td style="padding:9px 10px"><span style="font-size:11px;background:#F3F4F6;color:#6B7280;padding:2px 8px;border-radius:10px;font-weight:700">Sem análise</span></td>
+          </tr>
+          <tr>
+            <td style="padding:9px 10px"><strong>7</strong></td>
+            <td style="padding:9px 10px">Otros</td>
+            <td style="padding:9px 10px;text-align:right">49</td>
+            <td style="padding:9px 10px;text-align:right">14</td>
+            <td style="padding:9px 10px;text-align:right">28,4%</td>
+            <td style="padding:9px 10px;text-align:right"><span class="csat-warn-cd">71,6%</span></td>
+            <td style="padding:9px 10px"><span class="gap-badge gap-l">0,3 pp</span></td>
+            <td style="padding:9px 10px"><span style="font-size:11px;background:#F3F4F6;color:#6B7280;padding:2px 8px;border-radius:10px;font-weight:700">Baixo impacto</span></td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr style="border-top:2px solid var(--border);font-weight:700">
+            <td colspan="2" style="padding:9px 10px">TOTAL Point MLM (MXW)</td>
+            <td style="padding:9px 10px;text-align:right">4.584</td>
+            <td style="padding:9px 10px;text-align:right">1.024</td>
+            <td style="padding:9px 10px;text-align:right">22,3%</td>
+            <td style="padding:9px 10px;text-align:right"><span class="csat-ok-cd">77,7%</span></td>
+            <td colspan="2" style="padding:9px 10px;color:var(--muted);font-size:12px">Referência: 4.584 encuestas L1</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <!-- EVIDÊNCIAS REAIS -->
+    <div class="section-title-cd">Evidências reais — Transcrições de detratores (CSAT 1)</div>
+    <div class="section-desc-cd">Trechos reais das conversas que evidenciam as principais dores. Dados de usuário anonimizados.</div>
+
+    <h3 style="font-size:14px;font-weight:700;color:#DC2626;margin:0 0 12px">
+      Dor #1 — Terminal com falha de hardware irreversível
+      <span style="margin-left:8px;background:#FEE2E2;color:#991B1B;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px">Hardware faults &amp; RMA · CSAT 82,7%</span>
+    </h3>
+    <div class="case-grid-cd">
+      <div class="case-card-cd">
+        <div class="case-hdr red-hdr">
+          <div class="case-hdr-title">Triage de 2h — seller já tentou overnight</div>
+          <div class="case-hdr-id">ID: 7e3bc86d-e230-4c92-8918-f52bbeca71fb · Jan/2026</div>
+          <div class="case-tags">
+            <span class="tag-c1">CSAT 1</span>
+            <span class="tag-mxw">Maxwell</span>
+            <span class="tag-hw">Hardware</span>
+          </div>
+        </div>
+        <div class="case-bdy">
+          <div class="msg-lbl">Usuário</div>
+          <div class="msg-u">"Ya la tengo conectada, pero no enciende el foco rojo que indica que está cargando [...] Déjame mejor pedir otra en otra parte porque si me urje"</div>
+          <div class="msg-lbl">Maxwell (flow estruturado)</div>
+          <div class="msg-b">→ <em>Triage: "Déjala cargando 2 horas con el cargador original. Si persiste, abrimos un RMA."</em></div>
+          <div class="msg-lbl">Usuário (após passo de 2h)</div>
+          <div class="msg-u">"Ya se cumplieron las 2 horas y más pero lamentablemente no dio ninguna señal de luz, vibración, pantalla y tampoco encendió."</div>
+          <div class="insight-cd">
+            <strong>Insight:</strong> Seller já sabia que era falha permanente (sem foco vermelho = hardware morto). IA não detecta tentativas anteriores (overnight = 8h+) e aplica passo padrão de 2h de qualquer forma. Resultado: desgaste de confiança antes de iniciar o RMA que precisava desde o início.
+          </div>
+        </div>
+      </div>
+
+      <div class="case-card-cd">
+        <div class="case-hdr red-hdr">
+          <div class="case-hdr-title">RMA concluído — mas exige deslocamento presencial</div>
+          <div class="case-hdr-id">ID: f50aede1-2719-481c-8cea-d68dd1e55b01 · Fev/2026</div>
+          <div class="case-tags">
+            <span class="tag-c1">CSAT 3</span>
+            <span class="tag-mxw">Maxwell</span>
+            <span class="tag-hw">Hardware</span>
+          </div>
+        </div>
+        <div class="case-bdy">
+          <div class="msg-lbl">Maxwell</div>
+          <div class="msg-b">→ <em>RMA iniciado. Instrução: levar terminal ao DHL ou ponto de serviço autorizado com etiqueta gerada pela app.</em></div>
+          <div class="msg-lbl">Usuário (pós-CSAT)</div>
+          <div class="msg-u">"Solución al problema me lo dio, pero tengo que ir hasta una agencia para la devolución, eso significa tiempo y dinero. Hubiera preferido una recolección en mi hogar, dado que el problema no es mio."</div>
+          <div class="msg-lbl">Outro seller — mesma fricção</div>
+          <div class="msg-u">"Mi terminal ya no prendio y necesito un remplazo me dice que tengo que llevarla a una sucursal y esperarme hasta después del 2 de marzo"</div>
+          <div class="insight-cd">
+            <strong>Insight:</strong> A IA conclui o fluxo corretamente — RMA aberto, etiqueta disponível. Mas a solução exige ação presencial em horário comercial. Para sellers ativos, parar para ir a uma agência representa custo real de operação. Principal causa de abandono do processo de RMA.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h3 style="font-size:14px;font-weight:700;color:#D97706;margin:0 0 12px">
+      Dor #2 — IA sem capacidade transacional (Shipments)
+      <span style="margin-left:8px;background:#FFF7ED;color:#7C2D12;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px">Shipments &amp; Returns · CSAT 63,9%</span>
+    </h3>
+    <div class="case-grid-cd">
+      <div class="case-card-cd">
+        <div class="case-hdr orange-hdr">
+          <div class="case-hdr-title">Sistema indica estoque — seller não recebe rollos</div>
+          <div class="case-hdr-id">ID: 039b0bcf-4e9d-4c26-8a12-1b91d56adc91 · Mar/2026</div>
+          <div class="case-tags">
+            <span class="tag-c1">CSAT 1</span>
+            <span class="tag-mxw">Maxwell</span>
+            <span class="tag-ship">Shipments</span>
+          </div>
+        </div>
+        <div class="case-bdy">
+          <div class="msg-lbl">Usuário</div>
+          <div class="msg-u">"Solicito rollos de papel para mi terminal. Revisé mi stock y solo tengo uno y está en mi máquina. Su asistente me determina a través de un stock que decide tener."</div>
+          <div class="msg-lbl">Maxwell</div>
+          <div class="msg-b">→ <em>Consulta estoque no sistema → sistema indica saldo disponível → não envia rollos adicionais.</em></div>
+          <div class="msg-lbl">Usuário (frustrado)</div>
+          <div class="msg-u">"Hoy yo tengo que comprar los rollos para seguir cobrando y ¿a mi quién me recupera el pago de rollos?" (MXN $189 pagos pelo seller)</div>
+          <div class="insight-cd">
+            <strong>Insight:</strong> IA confia cegamente no estoque do sistema — que diverge da realidade. Seller arca com custo de consumível que deveria ser gratuito (~MXN $189). Alguns sellers relatam nunca ter recebido rollos em 1–2 anos de uso. Falha de dados, não de atendimento.
+          </div>
+        </div>
+      </div>
+
+      <div class="case-card-cd">
+        <div class="case-hdr orange-hdr">
+          <div class="case-hdr-title">IA reconhece limitação — sem escalamento</div>
+          <div class="case-hdr-id">ID: cff1e156-cebd-4fae-aeed-9265f87e0806 · Mar/2026</div>
+          <div class="case-tags">
+            <span class="tag-c1">CSAT 1</span>
+            <span class="tag-mxw">Maxwell</span>
+            <span class="tag-ship">Shipments</span>
+          </div>
+        </div>
+        <div class="case-bdy">
+          <div class="msg-lbl">Usuário</div>
+          <div class="msg-u">"¿Cómo la voy a rechazar si está en otro estado? La dirección es de otro estado, no está aquí en Puebla."</div>
+          <div class="msg-lbl">Maxwell</div>
+          <div class="msg-b">→ <em>Solução: "Puedes rechazar el paquete cuando llegue para que se devuelva." — repetido sem alternativa.</em></div>
+          <div class="msg-lbl">Usuário (desistindo)</div>
+          <div class="msg-u">"Repiten ustedes siempre lo mismo y lo mismo y lo mismo y no veo soluciones. Entonces ya déjalo así, quédense con el paquete con el dinero. Te decepciona esta empresa."</div>
+          <div class="insight-cd">
+            <strong>Insight:</strong> Solução proposta é tecnicamente impossível — pacote indo para outro estado, seller não pode recusar. IA não tem capacidade de alterar endereço ou cancelar pedido processado e não oferece escalamento. Seller abandona e perde o produto pago.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAPA DE OPORTUNIDADES -->
+    <div class="section-title-cd">Mapa de oportunidades — o que é urgente e para quem</div>
+    <div class="opp-grid">
+      <div class="opp-card opp-danger">
+        <div class="opp-card-title" style="background:#FEE2E2;color:#7F1D1D">🔴 Oportunidades críticas — ação imediata</div>
+        <div class="opp-item">
+          <span class="opp-num" style="color:#DC2626">1</span>
+          <div><strong>RMA com coleta em domicílio (Hardware)</strong><br>
+          <span style="color:var(--muted)">Maior causa de abandono pós-triage. Sellers sem mobilidade ou com urgência operacional não conseguem ir ao DHL. Coleta agendada eliminaria a principal fricção pós-diagnóstico. Estimativa: recuperar 30–40% dos detratores de Hardware.</span></div>
+        </div>
+        <div class="opp-item">
+          <span class="opp-num" style="color:#DC2626">2</span>
+          <div><strong>Corrigir estoque de rollos no sistema (Shipments)</strong><br>
+          <span style="color:var(--muted)">Sistema diverge da realidade — IA bloqueia envio gratuito. Seller paga MXN $189 por consumível que deveria receber. Alguns sem reposição há 2 anos. Impacto direto: 32 dos 91 detratores de Shipments (~35%).</span></div>
+        </div>
+        <div class="opp-item">
+          <span class="opp-num" style="color:#DC2626">3</span>
+          <div><strong>Eliminar triage de 2h quando seller já tentou overnight (Hardware)</strong><br>
+          <span style="color:var(--muted)">IA deve checar se seller já tentou carga prolongada antes de aplicar o passo padrão. Identificado em ~13 casos. Quick fix de flow.</span></div>
+        </div>
+      </div>
+      <div class="opp-card opp-warning">
+        <div class="opp-card-title" style="background:#FEF3C7;color:#78350F">🟡 Oportunidades estruturais — médio prazo</div>
+        <div class="opp-item">
+          <span class="opp-num" style="color:#D97706">1</span>
+          <div><strong>Escalonamento estruturado quando IA esgota opções</strong><br>
+          <span style="color:var(--muted)">Frase "buscarás otras opciones de cobro" equivale a abandono explícito. Substituir por: oferta de ticket de acompanhamento, callback ou agente humano. Identificado em Hardware e Shipments.</span></div>
+        </div>
+        <div class="opp-item">
+          <span class="opp-num" style="color:#D97706">2</span>
+          <div><strong>Capacidade transacional para cancelamento de pedidos (Shipments)</strong><br>
+          <span style="color:var(--muted)">IA reconhece que não pode cancelar, mas não tem saída eficaz. 21% dos detratores de Shipments têm essa dor. Habilitar cancelamento no prazo de 1h pós-compra seria suficiente para cobrir a maioria dos casos.</span></div>
+        </div>
+        <div class="opp-item">
+          <span class="opp-num" style="color:#D97706">3</span>
+          <div><strong>Fluxo dedicado para consultores / revendedores (Hardware)</strong><br>
+          <span style="color:var(--muted)">Consultores com terminal de cliente com falha são tratados como seller comum. RMA não se aplica. 3 casos identificados, volume real provavelmente maior.</span></div>
+        </div>
+        <div class="opp-item">
+          <span class="opp-num" style="color:#D97706">4</span>
+          <div><strong>Análise pendente: Payment (68,9%) e Reconciliation (68,3%)</strong><br>
+          <span style="color:var(--muted)">Dois L2s com CSAT abaixo da média e ~249 detratores sem análise qualitativa. Próximos candidatos à análise de transcrições.</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PLANO DE AÇÃO -->
+    <div class="section-title-cd">Plano de ação priorizado</div>
+    <div class="section-desc-cd">Ordenado por impacto estimado em CSAT. QW = Quick Win (&lt;1 mês) · MP = Médio Prazo · EST = Estrutural</div>
+    <div class="chart-wrap" style="overflow-x:auto">
+      <table class="action-table-v2">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Ação</th>
+            <th>L2</th>
+            <th>Impacto CSAT estimado</th>
+            <th>Prazo</th>
+            <th>Dono</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>1</strong></td>
+            <td><strong>Habilitar coleta em domicílio para RMA</strong><br><span style="font-size:12px;color:var(--muted)">Sellers sem mobilidade não conseguem ir ao DHL/agência. Coleta agendada eliminaria a principal fricção pós-diagnóstico de Hardware.</span></td>
+            <td>Hardware</td>
+            <td><span class="impact-dot dot-h"></span><strong>Alto</strong> — recuperar 30–40% dos detratores HW</td>
+            <td><span class="pill est">Estrutural</span></td>
+            <td><span class="pill pol">Política/Produto</span></td>
+          </tr>
+          <tr>
+            <td><strong>2</strong></td>
+            <td><strong>Corrigir sincronização de estoque de rollos</strong><br><span style="font-size:12px;color:var(--muted)">Sistema indica estoque que não condiz com realidade. IA bloqueia envio; seller paga MXN $189 por consumível gratuito.</span></td>
+            <td>Shipments</td>
+            <td><span class="impact-dot dot-h"></span><strong>Alto</strong> — ~32 casos diretos (35% det Shipments)</td>
+            <td><span class="pill mp">Médio Prazo</span></td>
+            <td><span class="pill prod">Produto/Sistema</span></td>
+          </tr>
+          <tr>
+            <td><strong>3</strong></td>
+            <td><strong>Eliminar triage de "2h" quando seller já fez tentativa equivalente</strong><br><span style="font-size:12px;color:var(--muted)">Checar se já tentou carga prolongada antes de aplicar passo padrão. Ir direto ao RMA se já confirmado.</span></td>
+            <td>Hardware</td>
+            <td><span class="impact-dot dot-m"></span>Médio — ~13 casos com desgaste evitável</td>
+            <td><span class="pill qw">Quick Win</span></td>
+            <td><span class="pill prod">Produto MXW</span></td>
+          </tr>
+          <tr>
+            <td><strong>4</strong></td>
+            <td><strong>Substituir encerramento sem ação por escalamento estruturado</strong><br><span style="font-size:12px;color:var(--muted)">"Buscarás otras opciones de cobro" = abandono explícito. Substituir por oferta de ticket, callback ou agente humano.</span></td>
+            <td>Hardware · Shipments</td>
+            <td><span class="impact-dot dot-m"></span>Médio — +3 a 5 pp CSAT percebido</td>
+            <td><span class="pill qw">Quick Win</span></td>
+            <td><span class="pill prod">Produto MXW</span></td>
+          </tr>
+          <tr>
+            <td><strong>5</strong></td>
+            <td><strong>Habilitar cancelamento de pedido em até 1h pós-compra</strong><br><span style="font-size:12px;color:var(--muted)">21% dos detratores de Shipments tentam cancelar pedido recém-feito. IA não tem capacidade transacional para isso.</span></td>
+            <td>Shipments</td>
+            <td><span class="impact-dot dot-m"></span>Médio — ~19 casos com solução direta</td>
+            <td><span class="pill est">Estrutural</span></td>
+            <td><span class="pill prod">Produto/Sistema</span></td>
+          </tr>
+          <tr>
+            <td><strong>6</strong></td>
+            <td><strong>Fluxo dedicado para consultores/revendedores em Hardware</strong><br><span style="font-size:12px;color:var(--muted)">Consultores com terminal de cliente com falha são tratados como seller comum — RMA não se aplica ao caso deles.</span></td>
+            <td>Hardware</td>
+            <td><span class="impact-dot dot-l"></span>Baixo — ~3 casos identificados (volume real maior)</td>
+            <td><span class="pill mp">Médio Prazo</span></td>
+            <td><span class="pill prod">Produto MXW</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="text-align:center;padding:20px 0;font-size:12px;color:var(--muted)">
+      Análise gerada em Abr/2026 · Dados: BigQuery meli-bi-data · Transcrições: BT_MAXWELL_MESSAGE · Jan–Mar 2026 · MLM · Point (L1) · MXW
+    </div>
+
+  </div>
+</div>
+
+
+<div id="tab-cx" class="tab-panel">
+  <div class="main">
+
+    <!-- EXEC SUMMARY -->
+    <div class="exec-box">
+      <h2>Resumo executivo — CX vs MXW · Point MLM · Jan–Mar 2026</h2>
+      <div class="tp-grid">
+        <div class="tp-item">
+          <div class="tp-num">1</div>
+          <div class="tp-body">
+            <div class="tp-hl">CS sistematicamente melhor em todos os L2s</div>
+            <div class="tp-detail">Hardware: NPS 87,5% (CS) vs CSAT 82,7% (MXW) — mas com 3,6% vs 17,3% de detração. Shipments: NPS 80% (CS) vs CSAT 63,9% (MXW). Diferença não é de produto — é de capacidade de execução.</div>
+          </div>
+        </div>
+        <div class="tp-item">
+          <div class="tp-num">2</div>
+          <div class="tp-body">
+            <div class="tp-hl">Hardware: CS pula triage desnecessária, MXW não</div>
+            <div class="tp-detail">Agente CS verifica o sistema antes de aplicar passos padrão e adapta o atendimento ao histórico relatado pelo seller. MXW sempre aplica a sequência completa — mesmo quando o seller já tentou tudo.</div>
+          </div>
+        </div>
+        <div class="tp-item">
+          <div class="tp-num">3</div>
+          <div class="tp-body">
+            <div class="tp-hl">Shipments: dores diferentes por canal</div>
+            <div class="tp-detail">CS: 51% sofrem com endereço errado, 25% pedem cancelamento. MXW: 35% sofrem com rollos de papel. Indica possível diferença de perfil ou que MXW não tipifica corretamente casos de consumíveis.</div>
+          </div>
+        </div>
+        <div class="tp-item">
+          <div class="tp-num">4</div>
+          <div class="tp-body">
+            <div class="tp-hl">CS escalona para logística; MXW só informa</div>
+            <div class="tp-detail">43% dos casos CS Shipments têm escalamento real para transportadora. MXW orienta rastreio mas não tem mecanismo de escalamento. Isso explica parte do gap de 16 pp entre os canais nesse L2.</div>
+          </div>
+        </div>
+        <div class="tp-item full">
+          <div class="tp-num">5</div>
+          <div class="tp-body">
+            <div class="tp-hl">Payment acceptance e Reconciliation: ambos os canais underperformam — é dor de produto</div>
+            <div class="tp-detail">CS NPS 69,6% vs MXW CSAT 68,9% (Payment) · CS NPS 69,4% vs MXW CSAT 68,3% (Reconciliation). Gap mínimo entre canais confirma que a raiz não está no atendimento — está em política de taxas, fluxo de cobro ou limitação sistêmica.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VOLUME COMPARISON -->
+    <div class="section-title-cd">Volumes e métricas — CS vs MXW · Point MLM</div>
+    <div class="section-desc-cd">Nota: CSAT MXW = % promotores (4–5). NPS CS = (Promotores − Detratores) / Total. Escalas diferentes — comparar padrão de desempenho, não números absolutos.</div>
+    <div class="chart-wrap" style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead>
+          <tr style="border-bottom:2px solid var(--border)">
+            <th style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:8px 10px;text-align:left">L2</th>
+            <th style="font-size:11px;color:#1E40AF;text-transform:uppercase;letter-spacing:.4px;padding:8px 10px;text-align:right">MXW Encuestas</th>
+            <th style="font-size:11px;color:#1E40AF;text-transform:uppercase;letter-spacing:.4px;padding:8px 10px;text-align:right">MXW CSAT</th>
+            <th style="font-size:11px;color:#1E40AF;text-transform:uppercase;letter-spacing:.4px;padding:8px 10px;text-align:right">MXW % Det.</th>
+            <th style="font-size:11px;color:#065F46;text-transform:uppercase;letter-spacing:.4px;padding:8px 10px;text-align:right">CS Surveys</th>
+            <th style="font-size:11px;color:#065F46;text-transform:uppercase;letter-spacing:.4px;padding:8px 10px;text-align:right">CS NPS</th>
+            <th style="font-size:11px;color:#065F46;text-transform:uppercase;letter-spacing:.4px;padding:8px 10px;text-align:right">CS % Det.</th>
+            <th style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:8px 10px">Gap canal</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:9px 10px"><strong>Shipments &amp; Returns</strong></td>
+            <td style="padding:9px 10px;text-align:right">471</td>
+            <td style="padding:9px 10px;text-align:right"><span class="csat-bad-cd">63,9%</span></td>
+            <td style="padding:9px 10px;text-align:right">36,1%</td>
+            <td style="padding:9px 10px;text-align:right">633</td>
+            <td style="padding:9px 10px;text-align:right"><span class="csat-ok-cd">83,2%</span></td>
+            <td style="padding:9px 10px;text-align:right">5,9%</td>
+            <td style="padding:9px 10px"><span class="gap-badge gap-h">~19 pp</span> <span style="font-size:11px;color:var(--muted)">CS vence</span></td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:9px 10px"><strong>Cellular/SIM</strong></td>
+            <td style="padding:9px 10px;text-align:right">345</td>
+            <td style="padding:9px 10px;text-align:right"><span class="csat-warn-cd">79,6%</span></td>
+            <td style="padding:9px 10px;text-align:right">20,4%</td>
+            <td style="padding:9px 10px;text-align:right">94</td>
+            <td style="padding:9px 10px;text-align:right"><span class="csat-ok-cd">86,2%</span></td>
+            <td style="padding:9px 10px;text-align:right">4,3%</td>
+            <td style="padding:9px 10px"><span class="gap-badge gap-h">~7 pp</span> <span style="font-size:11px;color:var(--muted)">CS vence</span></td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:9px 10px"><strong>Hardware faults &amp; RMA</strong></td>
+            <td style="padding:9px 10px;text-align:right">2.424</td>
+            <td style="padding:9px 10px;text-align:right"><span class="csat-ok-cd">82,7%</span></td>
+            <td style="padding:9px 10px;text-align:right">17,3%</td>
+            <td style="padding:9px 10px;text-align:right">723</td>
+            <td style="padding:9px 10px;text-align:right"><span class="csat-ok-cd">89,7%</span></td>
+            <td style="padding:9px 10px;text-align:right">2,9%</td>
+            <td style="padding:9px 10px"><span class="gap-badge gap-h">~7 pp</span> <span style="font-size:11px;color:var(--muted)">CS vence</span></td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:9px 10px"><strong>Account &amp; entitlement</strong></td>
+            <td style="padding:9px 10px;text-align:right">499</td>
+            <td style="padding:9px 10px;text-align:right"><span class="csat-warn-cd">79,4%</span></td>
+            <td style="padding:9px 10px;text-align:right">20,6%</td>
+            <td style="padding:9px 10px;text-align:right">234</td>
+            <td style="padding:9px 10px;text-align:right"><span class="csat-ok-cd">82,9%</span></td>
+            <td style="padding:9px 10px;text-align:right">4,3%</td>
+            <td style="padding:9px 10px"><span class="gap-badge gap-m">~4 pp</span> <span style="font-size:11px;color:var(--muted)">CS vence</span></td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:9px 10px"><strong>Payment acceptance</strong></td>
+            <td style="padding:9px 10px;text-align:right">476</td>
+            <td style="padding:9px 10px;text-align:right"><span class="csat-bad-cd">68,9%</span></td>
+            <td style="padding:9px 10px;text-align:right">31,1%</td>
+            <td style="padding:9px 10px;text-align:right">274</td>
+            <td style="padding:9px 10px;text-align:right"><span class="csat-bad-cd">69,9%</span></td>
+            <td style="padding:9px 10px;text-align:right">12,7%</td>
+            <td style="padding:9px 10px"><span class="gap-badge gap-l">~1 pp</span> <span style="font-size:11px;color:#EAB308">Empate</span></td>
+          </tr>
+          <tr>
+            <td style="padding:9px 10px"><strong>Reconciliation &amp; refunds</strong></td>
+            <td style="padding:9px 10px;text-align:right">320</td>
+            <td style="padding:9px 10px;text-align:right"><span class="csat-bad-cd">68,3%</span></td>
+            <td style="padding:9px 10px;text-align:right">31,7%</td>
+            <td style="padding:9px 10px;text-align:right">109</td>
+            <td style="padding:9px 10px;text-align:right"><span class="csat-bad-cd">66,0%</span></td>
+            <td style="padding:9px 10px;text-align:right">12,9%</td>
+            <td style="padding:9px 10px"><span class="gap-badge gap-l">~2 pp</span> <span style="font-size:11px;color:#EAB308">Empate</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- EXEMPLOS DE CONVERSAS REAIS -->
+    <div class="section-title-cd">Exemplos de conversas reais — MXW vs CS · Point MLM</div>
+    <div class="section-desc-cd">Transcrições reais extraídas do Maxwell (MXW) e do atendimento humano (CS). Conversas em espanhol — mercado MLM (México).</div>
+
+    <!-- Hardware: MXW aplica triage genérico vs CS adapta ao histórico -->
+    <p style="font-size:12px;color:var(--muted);margin:0 0 10px"><strong>Hardware faults &amp; RMA</strong> — CS adapta ao histórico relatado; MXW repete triage padrão mesmo quando usuário já tentou tudo</p>
+    <div class="conv-examples-grid">
+      <div class="conv-example">
+        <div class="conv-example-hdr hdr-red">
+          <span>🤖 MXW · Terminal sem carga — triage repetida</span>
+          <span style="font-family:monospace;font-size:10px;opacity:0.7;margin:0 6px">7c4bd80b-c3a3-4f53-82a3-0a2ee240712f-c3a3-4f53-82a3-0a2ee240712f</span>
+          <span class="conv-csat-badge">CSAT 1</span>
+        </div>
+        <div class="conv-example-body">
+          <div>
+            <div class="conv-msg-lbl">Usuário</div>
+            <div class="conv-msg usr">Tengo problemas con mi dispositivo Point Smart. No mantiene la carga, se apaga en cuanto la desconecto y falla el touch.</div>
+          </div>
+          <div>
+            <div class="conv-msg-lbl">Maxwell</div>
+            <div class="conv-msg bot">Entiendo. Vamos a hacer una revisión básica: 1) Carga el dispositivo por al menos 2 horas sin interrupciones. 2) Verifica que el cable y adaptador sean los originales. 3) Reinicia el dispositivo después de la carga completa. ¿Pudiste probarlo?</div>
+          </div>
+          <div>
+            <div class="conv-msg-lbl">Usuário</div>
+            <div class="conv-msg usr">Ya intenté de todo y sigue igual, y hasta se traba. ¿No pudieran mandar a un recolector ya que yo no tengo tiempo para ir a un DHL?</div>
+          </div>
+          <div>
+            <div class="conv-msg-lbl">Maxwell</div>
+            <div class="conv-msg bot">Lamentablemente el proceso de RMA requiere que entregues el dispositivo en una sucursal DHL o paquetería autorizada. No contamos con servicio de recolección a domicilio. Te comparto los pasos para generar tu guía de envío.</div>
+          </div>
+          <div>
+            <div class="conv-msg-lbl">Usuário</div>
+            <div class="conv-msg usr">Pues voy a cancelar mejor porque no me llegaría otra hasta que les llegue. Mejor contrataré otra en otro establecimiento.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="conv-example">
+        <div class="conv-example-hdr hdr-green">
+          <span>👤 CS · Terminal travada na inicialização — diagnóstico adaptado</span>
+          <span style="font-family:monospace;font-size:10px;opacity:0.7;margin:0 6px">447073542</span>
+          <span class="conv-channel-badge cs">CS Humano</span>
+        </div>
+        <div class="conv-example-body">
+          <div>
+            <div class="conv-msg-lbl">Usuário</div>
+            <div class="conv-msg usr">No puedo dar de alta la terminal.</div>
+          </div>
+          <div>
+            <div class="conv-msg-lbl">Agente CS</div>
+            <div class="conv-msg rep">Ya revisé tu cuenta: no hay una falla general afectando activaciones y tu Point Smart sí aparece registrada, con conexión reciente. Para destrabarlo, necesito ubicar el paso exacto donde se atoró: ¿qué pasa cuando intentas?</div>
+          </div>
+          <div>
+            <div class="conv-msg-lbl">Usuário</div>
+            <div class="conv-msg usr">Se queda buscando información. Ya la reinicié, la apagué y la prendí y sigue igual.</div>
+          </div>
+          <div>
+            <div class="conv-msg-lbl">Agente CS</div>
+            <div class="conv-msg rep">Gracias por la foto. Ya veo el punto: la terminal queda trabada en "buscando información…". Probá esto: conectala al hotspot de tu celular en vez de la red del negocio — a veces la red tiene restricciones y la terminal no termina de cargar la configuración inicial.</div>
+          </div>
+          <div>
+            <div class="conv-msg-lbl">Usuário</div>
+            <div class="conv-msg usr">¿Y cómo la cambio de red si no puedo hacer nada? No tengo acceso a la terminal.</div>
+          </div>
+          <div>
+            <div class="conv-msg-lbl">Agente CS</div>
+            <div class="conv-msg rep">Desde esa pantalla no podés cambiar la red manualmente. Hacé esto: apagá el wi-fi de tu negocio por un momento, encendé el hotspot de tu celular y reiniciá la terminal cerca del celular para que tome esa señal automáticamente.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shipments: MXW informa rastreio vs CS escala para logística -->
+    <p style="font-size:12px;color:var(--muted);margin:0 0 10px"><strong>Shipments &amp; Returns</strong> — CS escala para investigação de entrega; MXW informa rastreio mas não executa escalamento</p>
+    <div class="conv-examples-grid">
+      <div class="conv-example">
+        <div class="conv-example-hdr hdr-orange">
+          <span>🤖 MXW · Terminal não chegou no prazo</span>
+          <span style="font-family:monospace;font-size:10px;opacity:0.7;margin:0 6px">2a4d1fdf-3df3-40d6-b83b-5da13eccf51e-3df3-40d6-b83b-5da13eccf51e</span>
+          <span class="conv-csat-badge c3">CSAT 3</span>
+        </div>
+        <div class="conv-example-body">
+          <div>
+            <div class="conv-msg-lbl">Usuário</div>
+            <div class="conv-msg usr">Hola, buen día. Ayer compré otra terminal y se suponía que llegaría ayer pero no llegó. No sé qué hacer.</div>
+          </div>
+          <div>
+            <div class="conv-msg-lbl">Maxwell</div>
+            <div class="conv-msg bot">Entiendo tu preocupación. Revisando tu pedido, el rastreo indica que la entrega está pendiente. Según el sistema, el paquete está en tránsito y debería llegar hoy. Podés revisar el estado actualizado en "Mis compras &gt; Ver detalle del envío".</div>
+          </div>
+          <div>
+            <div class="conv-msg-lbl">Usuário</div>
+            <div class="conv-msg usr">Ok, dice que llega hoy. Pero si no llega preferiré cancelarlo porque lo pedí con urgencia.</div>
+          </div>
+          <div>
+            <div class="conv-msg-lbl">Maxwell</div>
+            <div class="conv-msg bot">Si el pedido no llega hoy, podés solicitar la cancelación desde "Mis compras" después del plazo de entrega. Por ahora te recomiendo esperar hasta el cierre del día para que el sistema actualice el estado.</div>
+          </div>
+          <div>
+            <div class="conv-msg-lbl">Usuário</div>
+            <div class="conv-msg usr">Ayer estuve todo el día en casa esperando y de repente vi que no entregaron sin ningún aviso.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="conv-example">
+        <div class="conv-example-hdr hdr-green">
+          <span>👤 CS · Terminal marcada como entregue mas não recebida</span>
+          <span style="font-family:monospace;font-size:10px;opacity:0.7;margin:0 6px">438097140</span>
+          <span class="conv-channel-badge cs">CS Humano</span>
+        </div>
+        <div class="conv-example-body">
+          <div>
+            <div class="conv-msg-lbl">Usuário</div>
+            <div class="conv-msg usr">No recibí la terminal Point.</div>
+          </div>
+          <div>
+            <div class="conv-msg-lbl">Agente CS</div>
+            <div class="conv-msg rep">Veo que tu pedido de Point Smart figura como entregado el [fecha]. ¿Podés confirmar si alguien más en tu domicilio o negocio pudo haberlo recibido? También revisá si dejaron algún aviso de paso.</div>
+          </div>
+          <div>
+            <div class="conv-msg-lbl">Usuário</div>
+            <div class="conv-msg usr">Ya pasaron horas y no lo recibió nadie.</div>
+          </div>
+          <div>
+            <div class="conv-msg-lbl">Agente CS</div>
+            <div class="conv-msg rep">Como ya pasaron más de 24 horas y nadie lo recibió, corresponde investigar esa entrega marcada como "entregada". Estoy escalando esto a un representante de logística para que revise el caso con la transportadora. Recibirás una actualización en las próximas horas.</div>
+          </div>
+          <div>
+            <div class="conv-msg-lbl">Usuário</div>
+            <div class="conv-msg usr">Bien gracias. Compré una terminal que marcaron como entregada cuando nadie la recibió.</div>
+          </div>
+          <div>
+            <div class="conv-msg-lbl">Agente CS</div>
+            <div class="conv-msg rep">Entendido, Miguel. Ya registré la situación y escalé la investigación. Cualquier novedad te llegará por correo. Lamentamos el inconveniente.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HARDWARE COMPARISON -->
+    <div class="section-title-cd">Hardware faults &amp; RMA — MXW vs CS</div>
+    <div class="section-desc-cd">MXW: 2.424 enc · 418 detratores (17,3%) · CSAT 82,7% &nbsp;|&nbsp; CS: 3.310 casos · 723 surveys · 21 detratores (2,9%) · NPS 89,7%</div>
+    <div class="comp-grid">
+      <div class="comp-col">
+        <div class="comp-col-hdr mxw-hdr">🤖 Maxwell — clusters de dor</div>
+        <div class="cluster-row">
+          <span class="cluster-pct-badge" style="background:#FEE2E2;color:#991B1B">54%</span>
+          Terminal não liga / não carrega
+        </div>
+        <div class="cluster-row">
+          <span class="cluster-pct-badge" style="background:#FEF3C7;color:#92400E">22%</span>
+          Pantalla rota / rayada (fisico)
+        </div>
+        <div class="cluster-row">
+          <span class="cluster-pct-badge" style="background:#FED7AA;color:#9A3412">14%</span>
+          Leitor não reconhece cartões
+        </div>
+        <div class="cluster-row">
+          <span class="cluster-pct-badge" style="background:#E0F2FE;color:#075985">10%</span>
+          Touch / tela travada / loop
+        </div>
+        <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px">
+          <div class="sub-label">Como a IA resolve</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6">
+            → Coleta nº série → identifica modelo<br>
+            → Triage "cargar 2h" <em>(mesmo que já tentado)</em><br>
+            → RMA via DHL / agência <em>(presencial obrigatório)</em><br>
+            → Quando esgota: "buscarás otras opciones"
+          </div>
+        </div>
+        <div class="insight-cd" style="margin-top:12px">
+          <strong>Gap crítico:</strong> MXW não detecta se seller já fez triage equivalente — aplica sempre os mesmos passos. 13 casos com desgaste evitável.
+        </div>
+        <div class="conv-ids" style="margin-top:10px">
+          <strong>Triage "cargar 2h" (mesmo após tentativa prévia):</strong><br>
+          29dc0c27-87c7-47f1-b57c-db9b4b97c7dc · 7e3bc86d-e230-4c92-8918-f52bbeca71fb · 42916908-79f4-4abc-808e-c9b7a5068add · 95bafdf9-3b8b-4883-a3af-544541c022cb · a9f639ac-9738-4a0c-99b6-9b750f4b433b
+          <br><strong>RMA via DHL / agência (presencial obrigatório):</strong><br>
+          f50aede1-2719-481c-8cea-d68dd1e55b01 · bd2d9bcf-4e22-479a-8c0e-c1b6758907d3 · fe0eb179-d621-433a-b223-b8c9bdd862f4 · 7c4bd80b-c3a3-4f53-82a3-0a2ee240712f · e71439ea-43cc-4adf-b7ad-5456bd6b4a7a
+          <br><strong>Encerra sem alternativa ("buscarás otras opciones"):</strong><br>
+          95bafdf9-3b8b-4883-a3af-544541c022cb
+        </div>
+      </div>
+      <div class="comp-col">
+        <div class="comp-col-hdr cs-hdr">👤 CS Humano — clusters de dor</div>
+        <div class="cluster-row">
+          <span class="cluster-pct-badge" style="background:#FEE2E2;color:#991B1B">68%</span>
+          Terminal não liga / não carrega
+        </div>
+        <div class="cluster-row">
+          <span class="cluster-pct-badge" style="background:#FEE2E2;color:#991B1B">68%</span>
+          Problemas de tela / touch / display
+        </div>
+        <div class="cluster-row">
+          <span class="cluster-pct-badge" style="background:#FEF3C7;color:#92400E">48%</span>
+          Alta / ativação / registro
+        </div>
+        <div class="cluster-row">
+          <span class="cluster-pct-badge" style="background:#FED7AA;color:#9A3412">45%</span>
+          Leitor não aceita cartões
+        </div>
+        <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px">
+          <div class="sub-label">Como o CS resolve</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6">
+            → Verifica conta e terminal no sistema primeiro<br>
+            → Adapta triage ao histórico do seller<br>
+            → RMA em 94% dos casos — às vezes com coleta<br>
+            → Quando não resolve: escala ou passa alternativa
+          </div>
+        </div>
+        <div class="insight-cd" style="background:#F0FDF4;border-left-color:#10B981;margin-top:12px">
+          <strong style="color:#065F46">Diferencial:</strong> Agente lê o sistema e adapta a resposta. Ex.: se terminal não se conecta "desde el 15/01", CS já oferta RMA sem fazer triage completo.
+        </div>
+        <div class="conv-ids" style="margin-top:10px">
+          <strong>Verifica conta e terminal no sistema primeiro:</strong><br>
+          447073542 · 429153191 · 435515729 · 428911220 · 430033421 · 444778671
+          <br><strong>Adapta triage ao histórico do seller:</strong><br>
+          444778671 · 432337266 · 430033421 · 429153191 · 447528244
+          <br><strong>RMA / troca gestionado:</strong><br>
+          435040187 · 432337266 · 427288426 · 445372120 · 433730058 · 440782590
+          <br><strong>Escala ou passa alternativa:</strong><br>
+          446239190 · 445788696 · 432468684 · 444632833 · 440782590
+        </div>
+      </div>
+    </div>
+
+    <!-- PAYMENT ACCEPTANCE COMPARISON -->
+    <div class="section-title-cd">Payment acceptance &amp; usage — MXW vs CS</div>
+    <div class="section-desc-cd">MXW: 476 enc · 148 detratores (31,1%) · CSAT 68,9% &nbsp;|&nbsp; CS: 274 surveys · NPS 69,9% · Gap canal ~0 pp</div>
+    <div class="comp-grid">
+      <div class="comp-col">
+        <div class="comp-col-hdr mxw-hdr">🤖 Maxwell — clusters de dor</div>
+        <div class="cluster-row">
+          <span class="cluster-pct-badge" style="background:#FEE2E2;color:#991B1B">71%</span>
+          Cobro rechazado / no avanza
+        </div>
+        <div class="cluster-row">
+          <span class="cluster-pct-badge" style="background:#FED7AA;color:#9A3412">13%</span>
+          Restrição / bloqueio de conta
+        </div>
+        <div class="cluster-row">
+          <span class="cluster-pct-badge" style="background:#FEF3C7;color:#92400E">12%</span>
+          Métodos / tarjetas no disponibles
+        </div>
+        <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px">
+          <div class="sub-label">Como a IA resolve</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6">
+            → Verifica se há incidência geral → informa que não há falha sistêmica<br>
+            → Para cobro rechazado: explica "controles de seguridad", orienta trocar método/tarjeta<br>
+            → Para restrições: informa tipo de restrição, orienta resolver via app<br>
+            → Para métodos indisponíveis: informa disponibilidade, orienta alternativas
+          </div>
+        </div>
+        <div class="insight-cd" style="margin-top:12px">
+          <strong>Gap crítico:</strong> IA não acessa o histórico de transações — dá diagnóstico genérico. Não identifica se o problema é o método, o valor ou o perfil do comprador. Não consegue aprovar cobro nem remover restrição.
+        </div>
+        <div class="conv-ids" style="margin-top:10px">
+          <strong>Cobro rechazado / controles de seguridad:</strong><br>
+          44f80efc-3996-4a71-953f-d4bb234246ac · 9c21de77-a91f-4bbe-8371-b545069a4afc · 58eb9202-fcd0-43a6-8aa8-36deddc35135 · 80870daf-f743-4810-959e-e2c85c62bf09 · e1488498-7db2-4520-8fae-1e6da0b8ab80
+          <br><strong>Restrição / bloqueio de conta:</strong><br>
+          2c1183d7-77f6-49db-b478-35e6ecfb36ad · 93966944-0217-43c1-af44-e30d83e652d7 · 3dbdb769-bbdb-4732-af38-f6b7aae70da5 · c99f6d65-06d2-4545-bd40-74d498692e18 · 1348bdf8-d17a-484f-8127-479f59ebbe8f
+          <br><strong>Métodos / tarjetas no disponibles (Tap to Pay, BAIT):</strong><br>
+          12426167-3f53-4a6f-945d-bc77f19f76a3 · 2818210b-3ea2-45db-94c3-3788d957d79b · 929d9deb-d845-45c6-8744-169f00e14561 · 8fbb28dd-f1c6-41f0-a75d-5e976eea641d · 4b9d2393-c8a0-44c0-984f-ea0dcbde752a
+        </div>
+      </div>
+      <div class="comp-col">
+        <div class="comp-col-hdr cs-hdr">👤 CS Humano — clusters de dor</div>
+        <div class="cluster-row">
+          <span class="cluster-pct-badge" style="background:#FEE2E2;color:#991B1B">~60%</span>
+          Cobro rechazado (BBVA e cartões específicos)
+        </div>
+        <div class="cluster-row">
+          <span class="cluster-pct-badge" style="background:#FED7AA;color:#9A3412">~25%</span>
+          Conta restrita / método bloqueado
+        </div>
+        <div class="cluster-row">
+          <span class="cluster-pct-badge" style="background:#FEF3C7;color:#92400E">~15%</span>
+          Dúvidas de uso e métodos disponíveis
+        </div>
+        <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px">
+          <div class="sub-label">Como o CS resolve</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6">
+            → Revisa histórico de transações no sistema<br>
+            → Dá diagnóstico específico: "vi rechazos: $X às Yh com visa crédito"<br>
+            → Identifica se é problema do método, do valor ou do perfil do comprador<br>
+            → Mas também não consegue reverter a rejeição — orientação mais precisa, resultado igual
+          </div>
+        </div>
+        <div class="insight-cd" style="background:#FFF7ED;border-left-color:#F97316;margin-top:12px">
+          <strong style="color:#9A3412">Empate confirmado — dor de produto:</strong> CS tem acesso ao histórico de transações e dá diagnóstico mais preciso que a IA, mas o resultado final é o mesmo — cobro não aprovado, seller perde venda. NPS CS 69,9% ≈ CSAT MXW 68,9%. Nenhuma melhoria de atendimento vai mover esse número. A raiz está na política de aprovação, nos controles de segurança e nos métodos disponíveis — é decisão de produto.
+        </div>
+        <div class="conv-ids" style="margin-top:10px">
+          <strong>Cobro rechazado BBVA / cartão específico (CS revisa sistema):</strong><br>
+          442539723 · 444629214 · 431297766 · 443481564
+          <br><strong>Diagnóstico específico por histórico de transações:</strong><br>
+          435893436 · 438711265 · 436280415
+          <br><strong>Restrição / método bloqueado (CS orienta mas não desbloqueia):</strong><br>
+          442539723 · 444629214 · 431297766
+        </div>
+      </div>
+    </div>
+
+    <!-- SHIPMENTS COMPARISON -->
+    <div class="section-title-cd">Shipments &amp; Returns — MXW vs CS</div>
+    <div class="section-desc-cd">MXW: 471 enc · 170 detratores (36,1%) · CSAT 63,9% &nbsp;|&nbsp; CS: 3.547 casos · 633 surveys · 37 detratores (5,9%) · NPS 83,2%</div>
+    <div class="comp-grid">
+      <div class="comp-col">
+        <div class="comp-col-hdr mxw-hdr">🤖 Maxwell — clusters de dor</div>
+        <div class="cluster-row">
+          <span class="cluster-pct-badge" style="background:#FEE2E2;color:#991B1B">35%</span>
+          Rollos de papel sem reposição
+        </div>
+        <div class="cluster-row">
+          <span class="cluster-pct-badge" style="background:#FEE2E2;color:#991B1B">21%</span>
+          Cancelamento de pedido — IA não executa
+        </div>
+        <div class="cluster-row">
+          <span class="cluster-pct-badge" style="background:#FEF3C7;color:#92400E">10%</span>
+          Endereço incorreto no pedido
+        </div>
+        <div class="cluster-row">
+          <span class="cluster-pct-badge" style="background:#E0F2FE;color:#075985">8%</span>
+          Pacote não entregue / extraviado
+        </div>
+        <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px">
+          <div class="sub-label">Como a IA resolve</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6">
+            → Rollos: consulta estoque (sistema divergente) → não envia<br>
+            → Cancelamento: "ver na app" → opção não existe<br>
+            → Endereço: "recusar entrega" <em>(inviável em outro estado)</em><br>
+            → Reconhece limitação sem escalamento
+          </div>
+        </div>
+        <div class="insight-cd" style="margin-top:12px">
+          <strong>Gap crítico:</strong> MXW não tem capacidade transacional (cancelar, alterar endereço, enviar rollos) e não escalona quando reconhece a limitação.
+        </div>
+        <div class="conv-ids" style="margin-top:10px">
+          <strong>Rollos: verifica estoque → não envia (sistema divergente):</strong><br>
+          039b0bcf-4e9d-4c26-8a12-1b91d56adc91 · 57215179-f9da-40d6-8a72-423b524a9a09 · b6e0e0ea-ec97-4bb7-8d5e-be3be537eb76 · 94a59dcd-7109-4437-a149-af67e485878c · 813a9098-dfda-462e-b399-f877c429d2d9
+          <br><strong>Cancelamento / endereço: redireciona para "ver na app":</strong><br>
+          df88fa5d-f10d-4851-9e87-4f3d2ec03402 · 3af42e2a-1f90-4367-9eef-f8e3413a13d6 · e5234a15-035c-451f-93d4-227f0b74a0cc · d15d47c4-8f40-4bb8-9c61-0e93a10f769a · 8a845138-a2ac-4bb0-a3cf-e65e35ef9eba
+          <br><strong>Não entregue: "aguardar prazo" ou "recusar entrega":</strong><br>
+          347ee2c8-d3ce-4694-8f46-763aaf805f7d · bead1af1-c35d-40d2-a9d2-c6949c320602 · 2dda9d7a-631d-43ad-8dd6-7a62d374516e · 2a4d1fdf-3df3-40d6-b83b-5da13eccf51e · cff1e156-cebd-4fae-aeed-9265f87e0806
+          <br><strong>Reconhece limitação sem escalamento:</strong><br>
+          5ace61ff-45c3-4950-a7fb-4616e0cacf11 · 6703e874-a542-497f-83bf-b8519c79a67a · 02185db4-e2d4-4dd2-a446-4dc08f8eb3fe · 2a4d1fdf-3df3-40d6-b83b-5da13eccf51e · ec7ae00b-071c-4cbe-b83a-b3a5f3262cb6
+        </div>
+      </div>
+      <div class="comp-col">
+        <div class="comp-col-hdr cs-hdr">👤 CS Humano — clusters de dor</div>
+        <div class="cluster-row">
+          <span class="cluster-pct-badge" style="background:#FEE2E2;color:#991B1B">51%</span>
+          Endereço errado / mudança de endereço
+        </div>
+        <div class="cluster-row">
+          <span class="cluster-pct-badge" style="background:#FEF3C7;color:#92400E">27%</span>
+          Pedido não chegou / retraso
+        </div>
+        <div class="cluster-row">
+          <span class="cluster-pct-badge" style="background:#FED7AA;color:#9A3412">25%</span>
+          Cancelamento de pedido
+        </div>
+        <div class="cluster-row">
+          <span class="cluster-pct-badge" style="background:#E0F2FE;color:#075985">16%</span>
+          Rollos de papel
+        </div>
+        <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px">
+          <div class="sub-label">Como o CS resolve</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6">
+            → Endereço: confirma situação, explica política com empatia<br>
+            → Não chegou: escala para transportadora (43% dos casos)<br>
+            → Cancelamento: consegue executar em 10% dos casos<br>
+            → 52% resolvem / confirmam entrega ao final
+          </div>
+        </div>
+        <div class="insight-cd" style="background:#F0FDF4;border-left-color:#10B981;margin-top:12px">
+          <strong style="color:#065F46">Diferencial:</strong> CS escalona para logística (43%) — contata a transportadora ativamente. MXW só orienta rastreio. Isso explica boa parte do gap de 16 pp.
+        </div>
+        <div class="conv-ids" style="margin-top:10px">
+          <strong>Endereço: confirma situação, explica com empatia:</strong><br>
+          431462002 · 437005969 · 440291733 · 439114305
+          <br><strong>Não chegou: escala para transportadora:</strong><br>
+          442631706 · 442622524 · 446655230 · 428136842 · 445319889 · 434048037
+          <br><strong>Cancelamento: consegue executar ou escalona:</strong><br>
+          438097140 · 428182872 · 431018109 · 435306986 · 433888578 · 430018550
+          <br><strong>Rollos: envia ou registra pedido:</strong><br>
+          437221181 · 429455329 · 444499248 · 431584479 · 445051728
+        </div>
+      </div>
+    </div>
+
+    <!-- VEREDICTO POR L2 -->
+    <div class="section-title-cd">Veredicto por L2 — onde cada canal performa melhor</div>
+    <div class="verdict-grid">
+      <div class="verdict-card wins-cs">
+        <div class="verdict-label" style="color:#065F46">🟢 CS vence com folga — Shipments (16 pp)</div>
+        <div style="font-size:13px">CS escalona para logística, MXW só informa. CS também resolve rollos em 33% dos casos; MXW não consegue devido ao estoque divergente. <strong>Raiz: MXW sem capacidade transacional e sem escalamento real.</strong></div>
+      </div>
+      <div class="verdict-card wins-cs">
+        <div class="verdict-label" style="color:#065F46">🟢 CS vence — Hardware (13 pp de taxa de detração)</div>
+        <div style="font-size:13px">CS adapta o atendimento ao histórico, pula triage redundante, mostra mais empatia. Mesma limitação estrutural (RMA presencial), mas chegam com muito menos detratores. <strong>Raiz: inteligência contextual do agente vs. flow rígido da IA.</strong></div>
+      </div>
+      <div class="verdict-card wins-cs">
+        <div class="verdict-label" style="color:#0284C7">🔵 CS vence — Cellular/SIM e Account mgmt</div>
+        <div style="font-size:13px">Agente CS consulta o status do chip no sistema, diagnostica ativamente e oferece substituição. MXW usa troubleshooting padrão. Menos críticos em volume, mas oportunidade real de ganho.</div>
+      </div>
+      <div class="verdict-card tie">
+        <div class="verdict-label" style="color:#92400E">🟡 Empate — Payment acceptance e Reconciliation</div>
+        <div style="font-size:13px">Ambos os canais entregam ~69%. CS não performa melhor porque a dor é de produto (regras de taxa, lógica de cobrança) — nem agente humano consegue resolver. <strong>Ação deve ser direcionada a produto, não a atendimento.</strong></div>
+      </div>
+    </div>
+
+    <!-- O QUE CS ENSINA AO MXW -->
+    <div class="section-title-cd">O que o CS ensina ao MXW — aprendizados por cluster</div>
+    <div class="diff-box">
+      <h3>Hardware</h3>
+      <div class="diff-row">
+        <span class="diff-icon">🔵</span>
+        <div><strong>Verificar tentativas anteriores antes de aplicar triage</strong><br><span style="color:var(--muted);font-size:12px">CS lê a conta: "equipo no se conecta desde 15/01 → oferece RMA direto". MXW sempre aplica os 4 passos. Implementar: flag "já realizou triage" no flow ou checar last_connection_date antes de iniciar sequência padrão.</span></div>
+      </div>
+      <div class="diff-row">
+        <span class="diff-icon">🔵</span>
+        <div><strong>Reconhecer a frustração antes de dar solução</strong><br><span style="color:var(--muted);font-size:12px">CS: "entiendo lo incómodo que es, sobre todo frente al cliente. Vamos a resolverlo por el lado más rápido." — MXW vai direto ao passo técnico. Adicionar acknowledgment de frustração antes de iniciar triage quando seller tem urgência operacional.</span></div>
+      </div>
+      <div class="diff-row">
+        <span class="diff-icon">🔵</span>
+        <div><strong>Substituir "buscarás otras opciones" por alternativas reais</strong><br><span style="color:var(--muted);font-size:12px">CS oferece: Point Tap (NFC no celular), Link de Pago, cobro por QR — mesmo quando não pode resolver o hardware. MXW encerra sem oferecer essas alternativas.</span></div>
+      </div>
+    </div>
+    <div class="diff-box" style="margin-top:16px">
+      <h3>Shipments</h3>
+      <div class="diff-row">
+        <span class="diff-icon">🟢</span>
+        <div><strong>Acionar a transportadora ativamente (não só informar rastreio)</strong><br><span style="color:var(--muted);font-size:12px">CS contata a transportadora em 43% dos casos de atraso — "voy a escalar esto con el equipo de logística". MXW só orienta o seller a verificar o tracking. Implementar: quando pedido está atrasado há X dias → MXW deve abrir ticket com logística automaticamente.</span></div>
+      </div>
+      <div class="diff-row">
+        <span class="diff-icon">🟢</span>
+        <div><strong>Corrigir fonte de dados de estoque de rollos</strong><br><span style="color:var(--muted);font-size:12px">CS resolve rollos em ~33% dos casos (menor proporção que no MXW porque em CS a dor de rollos tem 16% vs 35% no MXW). Nos casos resolvidos pelo CS, o agente consegue escalar para o time de produtos. MXW faz a mesma consulta de estoque e bloqueia o envio quando o sistema indica disponível. A correção precisa ser na fonte de dados.</span></div>
+      </div>
+      <div class="diff-row">
+        <span class="diff-icon">🟡</span>
+        <div><strong>Endereço pós-compra: ambos não conseguem alterar — MXW deve comunicar melhor</strong><br><span style="color:var(--muted);font-size:12px">CS explica a limitação com mais clareza e oferece alternativas (recusar entrega, aguardar e devolver). MXW propõe "recusar entrega" sem checar se é viável (ex.: pedido em outro estado). Implementar: verificar estado de destino antes de propor recusa.</span></div>
+      </div>
+    </div>
+
+    <!-- PLANO DE AÇÃO COMPARATIVO -->
+    <div class="section-title-cd">Plano de ação — baseado em aprendizados CS</div>
+    <div class="section-desc-cd">Priorizando ações que fecham o gap MXW↔CS. QW = Quick Win · MP = Médio Prazo · EST = Estrutural</div>
+    <div class="chart-wrap" style="overflow-x:auto">
+      <table class="action-table-v2">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Ação</th>
+            <th>L2</th>
+            <th>Gap fechado (estimativa)</th>
+            <th>Prazo</th>
+            <th>Dono</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>1</strong></td>
+            <td><strong>MXW: Checar histórico de conexão antes de aplicar triage de Hardware</strong><br><span style="font-size:12px;color:var(--muted)">Se terminal não conecta há &gt;7 dias, pular passos de carga/reset e ir direto ao RMA. CS já faz isso consultando o sistema.</span></td>
+            <td>Hardware</td>
+            <td><span class="impact-dot dot-h"></span>Reduzir detratores por triage desnecessário (~13 casos identificados)</td>
+            <td><span class="pill qw">Quick Win</span></td>
+            <td><span class="pill prod">Produto MXW</span></td>
+          </tr>
+          <tr>
+            <td><strong>2</strong></td>
+            <td><strong>MXW Shipments: criar ticket automático para transportadora em atrasos &gt;3 dias</strong><br><span style="font-size:12px;color:var(--muted)">CS escalona em 43% dos casos de atraso. MXW só orienta rastreio. Acionar logística automaticamente fecha o maior gap do canal.</span></td>
+            <td>Shipments</td>
+            <td><span class="impact-dot dot-h"></span>Fechar gap de ~16 pp com CS em Shipments</td>
+            <td><span class="pill mp">Médio Prazo</span></td>
+            <td><span class="pill prod">Produto MXW</span> <span class="pill op">Logística</span></td>
+          </tr>
+          <tr>
+            <td><strong>3</strong></td>
+            <td><strong>MXW Hardware: adicionar "acknowledgment" antes de iniciar triage técnico</strong><br><span style="font-size:12px;color:var(--muted)">CS abre com empatia antes da solução. MXW vai direto ao passo técnico. Mensagem de 1 linha antes da sequência: "Entendo que sem a terminal você perde vendas. Vamos resolver."</span></td>
+            <td>Hardware</td>
+            <td><span class="impact-dot dot-m"></span>+3 a 5 pp CSAT percebido</td>
+            <td><span class="pill qw">Quick Win</span></td>
+            <td><span class="pill prod">Produto MXW</span></td>
+          </tr>
+          <tr>
+            <td><strong>4</strong></td>
+            <td><strong>MXW Hardware: substituir encerramento por oferta de alternativas de cobro</strong><br><span style="font-size:12px;color:var(--muted)">CS oferece Point Tap, Link de Pago, QR quando hardware falha. MXW encerra com "buscarás otras opciones". Mesma lógica, mas tornada explícita.</span></td>
+            <td>Hardware</td>
+            <td><span class="impact-dot dot-m"></span>Reduzir abandono de sessão sem alternativa</td>
+            <td><span class="pill qw">Quick Win</span></td>
+            <td><span class="pill prod">Produto MXW</span></td>
+          </tr>
+          <tr>
+            <td><strong>5</strong></td>
+            <td><strong>Corrigir estoque de rollos na fonte (sistema, não atendimento)</strong><br><span style="font-size:12px;color:var(--muted)">Tanto MXW quanto CS consultam o mesmo sistema divergente. CS escala para o time de produtos em alguns casos. A correção precisa ser na base de dados, não nos fluxos de atendimento.</span></td>
+            <td>Shipments</td>
+            <td><span class="impact-dot dot-h"></span>Eliminar ~35% dos detratores MXW Shipments</td>
+            <td><span class="pill mp">Médio Prazo</span></td>
+            <td><span class="pill prod">Produto/Sistema</span></td>
+          </tr>
+          <tr>
+            <td><strong>6</strong></td>
+            <td><strong>Payment acceptance e Reconciliation: investigar raiz no produto</strong><br><span style="font-size:12px;color:var(--muted)">Ambos os canais empatam em ~69%. Nenhuma melhoria de atendimento vai mover esse número. Precisa de análise de produto: fluxo de cobro, política de taxas, lógica de conciliação.</span></td>
+            <td>Payment · Reconciliation</td>
+            <td><span class="impact-dot dot-h"></span>~249 detratores sem solução enquanto for problema de produto</td>
+            <td><span class="pill est">Estrutural</span></td>
+            <td><span class="pill prod">Produto</span> <span class="pill pol">Política</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="text-align:center;padding:20px 0;font-size:12px;color:var(--muted)">
+      Análise gerada em Abr/2026 · Dados: BigQuery meli-bi-data · Transcrições CX: BT_CX_TRANSCRIPT · MXW: BT_MAXWELL_MESSAGE · Jan–Mar 2026 · MLM · Point (L1)
+    </div>
+
+  </div>
+</div>
+
+<div class="footer">
+  Atualizado em 02/04/2026 · MLM · Point (L1) · MXW · Detratores (CSAT 1–3) · Jan–Mar 2026
+</div>
+
+<script>
+function switchTab(btn, tabId) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(tabId).classList.add('active');
+}
+function tog(header) {
+  const body = header.nextElementSibling;
+  const chev = header.querySelector('.chevron');
+  const open = body.classList.toggle('open');
+  chev.style.transform = open ? 'rotate(180deg)' : '';
+}
+
+// ---- CHART: Point L2 CSAT ----
+(function() {
+  var THRESHOLD_LINE = {
+    id: 'thresholdLines',
+    beforeDraw: function(chart) {
+      var ctx = chart.ctx;
+      var yAxis = chart.scales.y;
+      if (!yAxis) return;
+      // red at 65%
+      var y65 = yAxis.getPixelForValue(65);
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(chart.chartArea.left, y65);
+      ctx.lineTo(chart.chartArea.right, y65);
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = '#EF4444';
+      ctx.setLineDash([6,4]);
+      ctx.stroke();
+      // yellow at 77.7%
+      var y77 = yAxis.getPixelForValue(77.7);
+      ctx.beginPath();
+      ctx.moveTo(chart.chartArea.left, y77);
+      ctx.lineTo(chart.chartArea.right, y77);
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = '#EAB308';
+      ctx.setLineDash([4,3]);
+      ctx.stroke();
+      ctx.restore();
+    }
+  };
+  Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+  Chart.defaults.font.size = 11;
+  Chart.defaults.color = '#6B7280';
+
+  var labels = ['Shipments & Returns','Reconciliation & refunds','Payment acceptance','Otros','Account & entitlement','Cellular/SIM','Hardware faults & RMA'];
+  var data   = [63.9, 68.3, 68.9, 71.6, 79.4, 79.6, 82.7];
+  var colors = ['#FCA5A5','#FCA5A5','#FED7AA','#FEF3C7','#A7F3D0','#A7F3D0','#BBF7D0'];
+  var borders= ['#DC2626','#DC2626','#F97316','#EAB308','#10B981','#10B981','#10B981'];
+  var vols   = [471, 320, 476, 49, 499, 345, 2424];
+
+  new Chart(document.getElementById('chartPointL2'), {
+    type: 'bar',
+    plugins: [THRESHOLD_LINE],
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'CSAT %',
+        data: data,
+        backgroundColor: colors,
+        borderColor: borders,
+        borderWidth: 2,
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(c) { return ' CSAT: ' + c.raw + '%'; },
+            afterLabel: function(c) { return ' ' + vols[c.dataIndex].toLocaleString('pt-BR') + ' encuestas'; }
+          }
+        }
+      },
+      scales: {
+        y: { min: 50, max: 95, ticks: { callback: function(v) { return v + '%'; } }, grid: { color: '#F3F4F6' } },
+        x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+      }
+    }
+  });
+})();
+
+</script>
+</body>
+</html>
