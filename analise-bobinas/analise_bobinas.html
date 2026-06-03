@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Análise Bobinas — Maxwell Chat</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f4f6f9;
+      color: #2d3748;
+      padding: 32px;
+    }
+
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #1a202c;
+      margin-bottom: 4px;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: #718096;
+      margin-bottom: 32px;
+    }
+
+    /* ── KPI Cards ── */
+    .kpi-row {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+    }
+
+    .kpi-card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 20px 28px;
+      flex: 1;
+      min-width: 180px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+      border-top: 4px solid #667eea;
+    }
+
+    .kpi-card.green  { border-top-color: #48bb78; }
+    .kpi-card.orange { border-top-color: #ed8936; }
+    .kpi-card.red    { border-top-color: #fc8181; }
+    .kpi-card.blue   { border-top-color: #63b3ed; }
+
+    .kpi-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      color: #a0aec0;
+      margin-bottom: 6px;
+    }
+
+    .kpi-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: #1a202c;
+    }
+
+    .kpi-sub {
+      font-size: 12px;
+      color: #718096;
+      margin-top: 4px;
+    }
+
+    /* ── Section header ── */
+    .section-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #2d3748;
+      margin-bottom: 12px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid #e2e8f0;
+    }
+
+    /* ── Tables ── */
+    .table-wrap {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+      overflow-x: auto;
+      margin-bottom: 32px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    thead th {
+      background: #667eea;
+      color: #fff;
+      padding: 11px 14px;
+      text-align: left;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    tbody tr:nth-child(even) { background: #f7f8fc; }
+    tbody tr:hover { background: #eef0fb; }
+
+    tbody td {
+      padding: 10px 14px;
+      border-bottom: 1px solid #e2e8f0;
+      white-space: nowrap;
+    }
+
+    .num { text-align: right; }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .badge-green  { background: #c6f6d5; color: #276749; }
+    .badge-yellow { background: #fefcbf; color: #744210; }
+    .badge-red    { background: #fed7d7; color: #822727; }
+
+    tfoot td {
+      padding: 10px 14px;
+      font-weight: 700;
+      background: #edf2f7;
+      border-top: 2px solid #cbd5e0;
+    }
+
+    /* ── Projection box ── */
+    .proj-row {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+    }
+
+    .proj-card {
+      flex: 1;
+      min-width: 240px;
+      border-radius: 10px;
+      padding: 20px 24px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    }
+
+    .proj-card.warning {
+      background: #fffbeb;
+      border-left: 5px solid #f6ad55;
+    }
+
+    .proj-card.saving {
+      background: #f0fff4;
+      border-left: 5px solid #48bb78;
+    }
+
+    .proj-card h3 {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #2d3748;
+    }
+
+    .proj-card .amount {
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .proj-card.warning .amount { color: #c05621; }
+    .proj-card.saving  .amount { color: #276749; }
+
+    .proj-card p {
+      font-size: 12px;
+      color: #718096;
+      line-height: 1.5;
+    }
+
+    .highlight { color: #2b6cb0; font-weight: 600; }
+  </style>
+</head>
+<body>
+
+  <h1>Análise Bobinas — Maxwell Chat</h1>
+  <p class="subtitle">Sites: MLB · MLA · MLM · MLC &nbsp;|&nbsp; Período: abr/2026 – jun/2026 &nbsp;|&nbsp; Canal: MAXWELL_CHAT</p>
+
+  <!-- KPIs -->
+  <div class="kpi-row">
+    <div class="kpi-card green">
+      <div class="kpi-label">CSAT do Tema</div>
+      <div class="kpi-value">71,2%</div>
+      <div class="kpi-sub">Coil Shipping — Maxwell</div>
+    </div>
+    <div class="kpi-card blue">
+      <div class="kpi-label">NPS</div>
+      <div class="kpi-value">85%</div>
+      <div class="kpi-sub">Longtail representa 37% do share</div>
+    </div>
+    <div class="kpi-card orange">
+      <div class="kpi-label">Custo Emerg CX (período)</div>
+      <div class="kpi-value">USD 4.764</div>
+      <div class="kpi-sub">1.059 pedidos · USD 4,50/pedido</div>
+    </div>
+    <div class="kpi-card red">
+      <div class="kpi-label">Conversão Média</div>
+      <div class="kpi-value">34,4%</div>
+      <div class="kpi-sub">Conversas → pedidos realizados</div>
+    </div>
+  </div>
+
+  <!-- Tabela 1 -->
+  <div class="section-title">1. Funil por Sub-segmento — Maxwell Chat (abr–jun/2026)</div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Sub_segmento</th>
+          <th>TPV Range</th>
+          <th class="num">Total conversas</th>
+          <th class="num">Pedidos realizados</th>
+          <th class="num">Conversão (%)</th>
+          <th class="num">Estoque médio (%)</th>
+          <th class="num">Emerg CX (qtd)</th>
+          <th class="num">Custo Emerg CX (USD)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>LM</strong></td>
+          <td>&gt; 50K</td>
+          <td class="num">127</td>
+          <td class="num">44</td>
+          <td class="num"><span class="badge badge-yellow">34,6%</span></td>
+          <td class="num">56,8%</td>
+          <td class="num">4</td>
+          <td class="num">18</td>
+        </tr>
+        <tr>
+          <td><strong>CORP</strong></td>
+          <td>1K – 10K</td>
+          <td class="num">25</td>
+          <td class="num">14</td>
+          <td class="num"><span class="badge badge-green">56,0%</span></td>
+          <td class="num">72,6%</td>
+          <td class="num">3</td>
+          <td class="num">13</td>
+        </tr>
+        <tr>
+          <td><strong>SMB</strong></td>
+          <td>3K – 10K</td>
+          <td class="num">9.402</td>
+          <td class="num">3.664</td>
+          <td class="num"><span class="badge badge-green">39,0%</span></td>
+          <td class="num">75,9%</td>
+          <td class="num">282</td>
+          <td class="num">1.269</td>
+        </tr>
+        <tr>
+          <td><strong>HILO</strong></td>
+          <td>&lt; 0,5K</td>
+          <td class="num">11.514</td>
+          <td class="num">4.003</td>
+          <td class="num"><span class="badge badge-yellow">34,8%</span></td>
+          <td class="num">82,2%</td>
+          <td class="num">424</td>
+          <td class="num">1.908</td>
+        </tr>
+        <tr>
+          <td><strong>LOLO</strong></td>
+          <td>&lt; 0,5K</td>
+          <td class="num">9.704</td>
+          <td class="num">2.091</td>
+          <td class="num"><span class="badge badge-red">21,5%</span></td>
+          <td class="num">79,1%</td>
+          <td class="num">343</td>
+          <td class="num">1.543</td>
+        </tr>
+        <tr>
+          <td><strong>MILO</strong></td>
+          <td>0,25K – 1,5K</td>
+          <td class="num">171</td>
+          <td class="num">22</td>
+          <td class="num"><span class="badge badge-red">12,9%</span></td>
+          <td class="num">78,1%</td>
+          <td class="num">3</td>
+          <td class="num">13</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="2">Total</td>
+          <td class="num">30.943</td>
+          <td class="num">9.838</td>
+          <td class="num">—</td>
+          <td class="num">—</td>
+          <td class="num">1.059</td>
+          <td class="num">4.764</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <!-- Projeções -->
+  <div class="section-title">Projeções de Custo Emergencial CX</div>
+  <div class="proj-row">
+    <div class="proj-card warning">
+      <h3>Projeção até fim de ano (manutenção do ritmo atual)</h3>
+      <div class="amount">USD 20.600</div>
+      <p>
+        Base: <span class="highlight">USD 4.764</span> em ~2,1 meses (abr–jun/2026).<br>
+        Média mensal: <span class="highlight">USD 2.268/mês</span>.<br>
+        Projeção para os 7 meses restantes (jun–dez): <span class="highlight">+ USD 15.876</span>.
+      </p>
+    </div>
+    <div class="proj-card saving">
+      <h3>Economia projetada bloqueando HILO + LOLO + MILO</h3>
+      <div class="amount">USD 15.000</div>
+      <p>
+        HILO + LOLO + MILO representam <span class="highlight">72,7%</span> do custo emergencial atual (USD 3.464).<br>
+        Economia projetada até dez/2026: <span class="highlight">~USD 15.000</span>.<br>
+        SMB, CORP e LM continuam elegíveis ao canal emergencial.
+      </p>
+    </div>
+  </div>
+
+  <!-- Tabela 2 -->
+  <div class="section-title">2. Impacto no TPV — Sellers sem pedido em abril/2026</div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Sub_segmento</th>
+          <th class="num">Total conversas (abr)</th>
+          <th class="num">Sem pedido</th>
+          <th class="num">TPV médio abril (USD)</th>
+          <th class="num">TPV médio maio (USD)</th>
+          <th class="num">Variação (%)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>LM</strong></td>
+          <td class="num">53</td>
+          <td class="num">40</td>
+          <td class="num">118.508</td>
+          <td class="num">121.160</td>
+          <td class="num"><span class="badge badge-green">+2,2%</span></td>
+        </tr>
+        <tr>
+          <td><strong>CORP</strong></td>
+          <td class="num">9</td>
+          <td class="num">5</td>
+          <td class="num">110.400</td>
+          <td class="num">109.952</td>
+          <td class="num"><span class="badge badge-red">-0,4%</span></td>
+        </tr>
+        <tr>
+          <td><strong>SMB</strong></td>
+          <td class="num">3.872</td>
+          <td class="num">2.536</td>
+          <td class="num">23.152</td>
+          <td class="num">24.797</td>
+          <td class="num"><span class="badge badge-green">+7,1%</span></td>
+        </tr>
+        <tr>
+          <td><strong>HILO</strong></td>
+          <td class="num">4.853</td>
+          <td class="num">3.282</td>
+          <td class="num">3.877</td>
+          <td class="num">4.438</td>
+          <td class="num"><span class="badge badge-green">+14,5%</span></td>
+        </tr>
+        <tr>
+          <td><strong>LOLO</strong></td>
+          <td class="num">3.876</td>
+          <td class="num">3.139</td>
+          <td class="num">1.705</td>
+          <td class="num">1.846</td>
+          <td class="num"><span class="badge badge-green">+8,3%</span></td>
+        </tr>
+        <tr>
+          <td><strong>MILO</strong></td>
+          <td class="num">48</td>
+          <td class="num">48</td>
+          <td class="num">793</td>
+          <td class="num">1.765</td>
+          <td class="num"><span class="badge badge-green">+122,6%</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p style="font-size:11px; color:#a0aec0; text-align:right; margin-top: -20px;">
+    Fonte: BT_CX_MAXWELL_CONVERSATIONS · BT_MP_POINT_SERVICE_ORDER · LK_MP_SEGMENTATION_SELLERS · BT_MP_PAY_PAYMENTS · SBOX_SELLERSGROWTHMP.bobinas_inventory_request &nbsp;|&nbsp; Gerado em 03/06/2026
+  </p>
+
+</body>
+</html>
